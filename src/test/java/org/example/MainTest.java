@@ -13,6 +13,6 @@ public class MainTest {
 
         assertEquals(a + b, new Main().sum(1, 2));
 
-        System.out.println("Прачечная хуячечная!");
+        System.out.println("Прачечная [f[f]");
     }
 }
