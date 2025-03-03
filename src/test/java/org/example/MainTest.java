@@ -11,8 +11,7 @@ public class MainTest {
         int a = 2;
         int b = 1;
 
-        assertEquals(a + b, new Main().sum(1, 2));
+        assertEquals(a + b + 1, new Main().sum(a, b), "Прачечная яяя");
 
-        System.out.println("Прачечная [f[f]");
     }
 }
