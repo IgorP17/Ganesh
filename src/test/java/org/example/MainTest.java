@@ -11,7 +11,7 @@ public class MainTest {
         int a = 2;
         int b = 1;
 
-        assertEquals(a + b + 1, new Main().sum(a, b), "Прачечная яяя");
+        assertEquals(a + b, new Main().sum(a, b), "Прачечная яяя");
 
     }
 }
