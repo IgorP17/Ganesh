@@ -13,9 +13,27 @@ sudo apt-get install -y apt-transport-https ca-certificates curl software-proper
 
 1.2 Добавьте ключ репозитория Docker
 
-Добавьте официальный ключ репозитория Docker:
+-- N.B. Добавьте официальный ключ репозитория Docker:
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+Примечание - возможно на след шаге это и делается
+Ошибка в данном случае отсутствует, однако использование команды apt-key действительно считается устаревшим.
+Вместо нее рекомендуется использовать методы управления ключами через файлы в каталоге /etc/apt/trusted.gpg.d.
+
+Для добавления ключа Docker правильным способом будет выполнение следующих шагов:
+
+    Скачайте ключ:
+
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+Добавьте репозиторий Docker в список источников APT:
+
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+Таким образом, вы добавите ключ и настроите систему для работы с репозиториями Docker без использования устаревших команд.
 
 1.3 Добавьте репозиторий Docker
 
@@ -30,6 +48,14 @@ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubun
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
+------ NB внезапно xia линукс минта нет в репе - используем focal вроде последний
+Замените xia на правильное кодовое имя вашей версии Ubuntu. Например, если ваша версия Ubuntu — 20.04, кодовым именем будет focal.
+Откройте файл /etc/apt/sources.list.d/docker.list и отредактируйте строку источника:
+
+sudo nano /etc/apt/sources.list.d/docker.list
+
+
+----- I'm here -------------
 1.5 Добавьте текущего пользователя в группу Docker
 
 Чтобы избежать необходимости использовать sudo при работе с Docker:
