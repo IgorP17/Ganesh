@@ -38,7 +38,7 @@ sudo apt-mark hold kubelet kubeadm kubectl
 kubectl version --client
 kubeadm version
 
---here Шаг 3: Инициализация Kubernetes
+Шаг 3: Инициализация Kubernetes
 
 Инициализируем кластер Kubernetes:
 bash
@@ -69,6 +69,81 @@ sudo kubeadm init --pod-network-cidr=10.244.0.0/16
         комментаррим
         # /swapfile none swap sw 0 0
 
+    все равно не ставимся:
+        Шаг 1: Сбросьте состояние kubeadm
+
+        Выполните команду для сброса состояния кластера:
+        bash
+        Copy
+
+        sudo kubeadm reset
+
+        Эта команда:
+
+            Останавливает все запущенные компоненты Kubernetes.
+
+            Удаляет конфигурационные файлы.
+
+            Очищает сетевые настройки.
+
+        Шаг 2: Удалите оставшиеся файлы
+
+        Если после kubeadm reset остались файлы, удалите их вручную:
+        bash
+        Copy
+
+        sudo rm -rf /etc/kubernetes/
+        sudo rm -rf /var/lib/etcd/
+        sudo rm -rf $HOME/.kube/
+
+        Шаг 3: Убедитесь, что порты освобождены
+
+        Проверьте, какие процессы используют порты 6443, 10259, 10257, 2379 и 2380:
+        bash
+        Copy
+
+        sudo netstat -tuln | grep -E '6443|10259|10257|2379|2380'
+
+        Если порты заняты, найдите и завершите процессы, которые их используют. Например:
+        bash
+        Copy
+
+        sudo lsof -i :6443  # Найти процесс, использующий порт 6443
+        sudo kill <PID>     # Завершить процесс по его ID
+
+        2. Повторная инициализация кластера
+
+        После очистки системы выполните инициализацию кластера снова:
+        bash
+        Copy
+
+        sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+
+#############################################
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.0.129:6443 --token p53tmr.2wpze8p6f2xxbpj9 \
+        --discovery-token-ca-cert-hash sha256:56dddac85a4322aa51d262778b738a2652687b6e7befcc96eb4f017499cb044d
+
+##############################################
+
+
 
 После завершения команды вы получите команду для подключения других узлов (если они есть) и команду для настройки kubectl:
 bash
@@ -78,6 +153,7 @@ mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
+-----here-----
 Шаг 4: Установка сетевого плагина
 
 Установим сетевой плагин (например, Flannel):
