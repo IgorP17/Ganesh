@@ -38,6 +38,7 @@ kubectl version --client
 kubeadm version
 
 --here Шаг 3: Инициализация Kubernetes
+-- remote version is much newer: v1.32.2; falling back to: stable-1.28
 
 Инициализируем кластер Kubernetes:
 bash
