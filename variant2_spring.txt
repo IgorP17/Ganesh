@@ -1,0 +1,285 @@
+Отличный вопрос! Если вы хотите заменить SparkJava на Spring Boot, это вполне возможно. Spring Boot предоставляет более мощные и гибкие инструменты для разработки веб-приложений, включая встроенную поддержку Kafka, REST API и работу с базами данных через Spring Data JPA.
+
+Давайте модифицируем ваш проект, чтобы использовать Spring Boot.
+Шаг 1: Создание Spring Boot проекта
+Зависимости (Maven pom.xml)
+
+Добавьте следующие зависимости в ваш pom.xml:
+xml
+Copy
+
+<dependencies>
+    <!-- Spring Boot Starter Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Starter Data JPA -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <!-- PostgreSQL Driver -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+    </dependency>
+
+    <!-- Spring Kafka -->
+    <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+    </dependency>
+
+    <!-- Lombok (опционально, для упрощения кода) -->
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+
+Run HTML
+Шаг 2: Конфигурация Spring Boot
+Конфигурация Kafka и PostgreSQL
+
+Создайте файл application.yml в src/main/resources:
+yaml
+Copy
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/app_db
+    username: app_user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: request-consumer
+
+Шаг 3: Модификация приложения 1 (Producer и Status Updater)
+Модель данных
+
+Создайте сущность для таблицы requests:
+java
+Copy
+
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+public class Request {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String data;
+    private String status = "PENDING";
+}
+
+Репозиторий
+
+Создайте репозиторий для работы с базой данных:
+java
+Copy
+
+package com.example.demo.repository;
+
+import com.example.demo.model.Request;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RequestRepository extends JpaRepository<Request, Long> {
+}
+
+Kafka Producer
+
+Создайте сервис для отправки сообщений в Kafka:
+java
+Copy
+
+package com.example.demo.service;
+
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaProducerService {
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public KafkaProducerService(KafkaTemplate<String, String> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void sendMessage(String topic, String key, String value) {
+        kafkaTemplate.send(topic, key, value);
+    }
+}
+
+REST Controller
+
+Создайте контроллер для обработки POST-запросов:
+java
+Copy
+
+package com.example.demo.controller;
+
+import com.example.demo.model.Request;
+import com.example.demo.repository.RequestRepository;
+import com.example.demo.service.KafkaProducerService;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api")
+public class RequestController {
+    private final RequestRepository requestRepository;
+    private final KafkaProducerService kafkaProducerService;
+
+    public RequestController(RequestRepository requestRepository, KafkaProducerService kafkaProducerService) {
+        this.requestRepository = requestRepository;
+        this.kafkaProducerService = kafkaProducerService;
+    }
+
+    @PostMapping("/send")
+    public String sendRequest(@RequestBody String data) {
+        Request request = new Request();
+        request.setData(data);
+        request = requestRepository.save(request);
+
+        kafkaProducerService.sendMessage("requests", request.getId().toString(), data);
+        return "Request saved with ID: " + request.getId();
+    }
+}
+
+Kafka Consumer (Status Updater)
+
+Создайте сервис для чтения статусов из Kafka и обновления базы данных:
+java
+Copy
+
+package com.example.demo.service;
+
+import com.example.demo.model.Request;
+import com.example.demo.repository.RequestRepository;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaConsumerService {
+    private final RequestRepository requestRepository;
+
+    public KafkaConsumerService(RequestRepository requestRepository) {
+        this.requestRepository = requestRepository;
+    }
+
+    @KafkaListener(topics = "statuses", groupId = "status-updater")
+    public void updateStatus(String status) {
+        String[] parts = status.split(":");
+        Long id = Long.parseLong(parts[0]);
+        String newStatus = parts[1];
+
+        requestRepository.findById(id).ifPresent(request -> {
+            request.setStatus(newStatus);
+            requestRepository.save(request);
+        });
+    }
+}
+
+Шаг 4: Модификация приложения 2 (Consumer)
+Модель данных
+
+Создайте сущность для таблицы processed_requests:
+java
+Copy
+
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+public class ProcessedRequest {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long requestId;
+    private String data;
+    private String status;
+}
+
+Репозиторий
+
+Создайте репозиторий для работы с базой данных:
+java
+Copy
+
+package com.example.demo.repository;
+
+import com.example.demo.model.ProcessedRequest;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ProcessedRequestRepository extends JpaRepository<ProcessedRequest, Long> {
+}
+
+Kafka Consumer
+
+Создайте сервис для чтения сообщений из Kafka и их обработки:
+java
+Copy
+
+package com.example.demo.service;
+
+import com.example.demo.model.ProcessedRequest;
+import com.example.demo.repository.ProcessedRequestRepository;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+@Service
+public class KafkaConsumerService {
+    private final ProcessedRequestRepository processedRequestRepository;
+    private final KafkaProducerService kafkaProducerService;
+
+    public KafkaConsumerService(ProcessedRequestRepository processedRequestRepository, KafkaProducerService kafkaProducerService) {
+        this.processedRequestRepository = processedRequestRepository;
+        this.kafkaProducerService = kafkaProducerService;
+    }
+
+    @KafkaListener(topics = "requests", groupId = "request-consumer")
+    public void processRequest(String key, String data) {
+        ProcessedRequest processedRequest = new ProcessedRequest();
+        processedRequest.setRequestId(Long.parseLong(key));
+        processedRequest.setData(data);
+        processedRequest.setStatus("SUCCESS");
+        processedRequestRepository.save(processedRequest);
+
+        kafkaProducerService.sendMessage("statuses", key, key + ":SUCCESS");
+    }
+}
+
+Шаг 5: Запуск приложений
+
+    Запустите PostgreSQL и Kafka.
+
+    Соберите и запустите Spring Boot приложения:
+    bash
+    Copy
+
+    mvn clean package
+    java -jar app1/target/app1.jar
+    java -jar app2/target/app2.jar
+
+Итог
+
+Теперь ваш проект использует Spring Boot вместо SparkJava. Spring Boot предоставляет более мощные инструменты для работы с Kafka, REST API и базами данных. Если что-то нужно доработать или у вас есть вопросы, дайте знать! 😊

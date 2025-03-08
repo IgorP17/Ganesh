@@ -1,0 +1,266 @@
+Архитектура проекта
+    Приложение 1 (Producer):
+        Принимает HTTP POST-запрос.
+        Сохраняет данные в PostgreSQL с уникальным ID.
+        Отправляет данные в Kafka.
+
+    Приложение 2 (Consumer):
+        Читает сообщения из Kafka.
+        Сохраняет данные в другую таблицу PostgreSQL.
+        Отправляет статус обработки в Kafka (например, SUCCESS или FAILED).
+    Приложение 1 (Status Updater):
+        Читает статусный топик Kafka.
+        Обновляет статус сообщения в PostgreSQL.
+
+Шаг 1: Установка и настройка PostgreSQL
+Установка PostgreSQL
+    Установите PostgreSQL:
+    bash
+    Copy
+
+    sudo apt update
+    sudo apt install postgresql postgresql-contrib
+
+    Запустите и включите PostgreSQL:
+    bash
+    Copy
+
+    sudo systemctl start postgresql
+    sudo systemctl enable postgresql
+
+    Создайте базу данных и пользователя:
+    bash
+    Copy
+
+    sudo -u postgres psql
+    CREATE DATABASE app_db;
+    CREATE USER app_user WITH PASSWORD 'password';
+    GRANT ALL PRIVILEGES ON DATABASE app_db TO app_user;
+    \q
+
+    Создайте таблицы:
+
+        Для первого приложения:
+        sql
+        Copy
+
+        CREATE TABLE requests (
+            id SERIAL PRIMARY KEY,
+            data TEXT NOT NULL,
+            status VARCHAR(50) DEFAULT 'PENDING'
+        );
+
+        Для второго приложения:
+        sql
+        Copy
+
+        CREATE TABLE processed_requests (
+            id SERIAL PRIMARY KEY,
+            request_id INT NOT NULL,
+            data TEXT NOT NULL,
+            status VARCHAR(50) NOT NULL
+        );
+
+Шаг 2: Установка и настройка Kafka
+Установка Kafka
+
+    Скачайте и установите Kafka:
+    bash
+    Copy
+
+    wget https://downloads.apache.org/kafka/3.6.0/kafka_2.13-3.6.0.tgz
+    tar -xzf kafka_2.13-3.6.0.tgz
+    cd kafka_2.13-3.6.0
+
+    Запустите Zookeeper и Kafka:
+    bash
+    Copy
+
+    bin/zookeeper-server-start.sh config/zookeeper.properties
+    bin/kafka-server-start.sh config/server.properties
+
+    Создайте топики:
+    bash
+    Copy
+
+    bin/kafka-topics.sh --create --topic requests --bootstrap-server localhost:9092
+    bin/kafka-topics.sh --create --topic statuses --bootstrap-server localhost:9092
+
+Шаг 3: Пример кода Java-приложений
+Приложение 1 (Producer и Status Updater)
+Зависимости (Maven pom.xml):
+xml
+Copy
+
+<dependencies>
+    <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>3.6.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.6.0</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>spark-core</artifactId>
+        <version>2.9.4</version>
+    </dependency>
+</dependencies>
+
+Run HTML
+Код:
+java
+Copy
+
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.clients.consumer.*;
+import spark.Spark;
+
+import java.sql.*;
+import java.util.Properties;
+
+public class App1 {
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/app_db";
+    private static final String DB_USER = "app_user";
+    private static final String DB_PASSWORD = "password";
+
+    public static void main(String[] args) {
+        // Producer
+        Spark.post("/send", (req, res) -> {
+            String data = req.body();
+            int id = saveToDatabase(data);
+            sendToKafka("requests", id, data);
+            return "Request saved with ID: " + id;
+        });
+
+        // Status Updater
+        new Thread(() -> {
+            Properties props = new Properties();
+            props.put("bootstrap.servers", "localhost:9092");
+            props.put("group.id", "status-updater");
+            props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+            props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+            KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+            consumer.subscribe(List.of("statuses"));
+
+            while (true) {
+                ConsumerRecords<String, String> records = consumer.poll(100);
+                for (ConsumerRecord<String, String> record : records) {
+                    updateStatusInDatabase(record.value());
+                }
+            }
+        }).start();
+    }
+
+    private static int saveToDatabase(String data) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO requests (data) VALUES (?)", Statement.RETURN_GENERATED_KEYS)) {
+            stmt.setString(1, data);
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        }
+        return -1;
+    }
+
+    private static void sendToKafka(String topic, int id, String data) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        Producer<String, String> producer = new KafkaProducer<>(props);
+        producer.send(new ProducerRecord<>(topic, String.valueOf(id), data));
+        producer.close();
+    }
+
+    private static void updateStatusInDatabase(String status) throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement("UPDATE requests SET status = ? WHERE id = ?")) {
+            stmt.setString(1, status);
+            stmt.setInt(2, Integer.parseInt(status.split(":")[0]));
+            stmt.executeUpdate();
+        }
+    }
+}
+
+Приложение 2 (Consumer)
+Код:
+java
+Copy
+
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.clients.producer.*;
+import java.sql.*;
+import java.util.Properties;
+
+public class App2 {
+    private static final String DB_URL = "jdbc:postgresql://localhost:5432/app_db";
+    private static final String DB_USER = "app_user";
+    private static final String DB_PASSWORD = "password";
+
+    public static void main(String[] args) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("group.id", "request-consumer");
+        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+
+        KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+        consumer.subscribe(List.of("requests"));
+
+        while (true) {
+            ConsumerRecords<String, String> records = consumer.poll(100);
+            for (ConsumerRecord<String, String> record : records) {
+                processRequest(record.key(), record.value());
+            }
+        }
+    }
+
+    private static void processRequest(String id, String data) {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO processed_requests (request_id, data, status) VALUES (?, ?, ?)")) {
+            stmt.setInt(1, Integer.parseInt(id));
+            stmt.setString(2, data);
+            stmt.setString(3, "SUCCESS");
+            stmt.executeUpdate();
+
+            sendStatusToKafka(id + ":SUCCESS");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            sendStatusToKafka(id + ":FAILED");
+        }
+    }
+
+    private static void sendStatusToKafka(String status) {
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        Producer<String, String> producer = new KafkaProducer<>(props);
+        producer.send(new ProducerRecord<>("statuses", status));
+        producer.close();
+    }
+}
+
+Шаг 4: Запуск приложений
+
+    Запустите PostgreSQL и Kafka.
+
+    Соберите и запустите Java-приложения:
+    bash
+    Copy
+
+    mvn clean package
+    java -jar app1/target/app1.jar
+    java -jar app2/target/app2.jar
+
+Если что-то упустил или нужно что-то доработать, дайте знать! 😊
+New chat
