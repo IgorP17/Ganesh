@@ -34,7 +34,7 @@
     Copy
 
     sudo apt update
-
+---------- here ----------
 Шаг 2: Установка pgAdmin 4
 
     Установите pgAdmin 4:
