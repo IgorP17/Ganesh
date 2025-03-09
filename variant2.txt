@@ -15,19 +15,23 @@
 Шаг 1: Установка и настройка PostgreSQL
 Установка PostgreSQL
     Установите PostgreSQL:
-    bash
-    Copy
 
     sudo apt update
     sudo apt install postgresql postgresql-contrib
 
     Запустите и включите PostgreSQL:
-    bash
-    Copy
 
     sudo systemctl start postgresql
     sudo systemctl enable postgresql
 
+-------------
+Задание пароля для пользователя postgres в PostgreSQL
+sudo -i -u postgres
+psql
+\password postgres
+
+тут еще ставим pgadmin
+---------------
     Создайте базу данных и пользователя:
     bash
     Copy
@@ -37,6 +41,35 @@
     CREATE USER app_user WITH PASSWORD 'password';
     GRANT ALL PRIVILEGES ON DATABASE app_db TO app_user;
     \q
+
+---------
+вот тут важно
+sudo nano /etc/postgresql/<версия>/main/pg_hba.conf
+ sudo nano /etc/postgresql/16/main/pg_hba.conf
+Измените метод аутентификации для пользователя app_user на md5:
+local   all             app_user                                md5
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+local   all             app_user                                md5
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     peer
+# IPv4 local connections:
+host    all             all             127.0.0.1/32            scram-sha-256
+local   all             app_user                                md5
+
+sudo systemctl restart postgresql
+sudo -i -u postgres
+
+psql -d app_db
+
+GRANT ALL PRIVILEGES ON SCHEMA public TO app_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO app_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO app_user;
+\dn+
+
+psql -d app_db -U app_user
+------------------
 
     Создайте таблицы:
 
@@ -60,6 +93,13 @@
             data TEXT NOT NULL,
             status VARCHAR(50) NOT NULL
         );
+
+------ ставим бобра -------------
+с сайта качнули
+sudo dpkg -i ~/Загрузки/dbeaver-ce_<версия>_amd64.deb
+sudo dpkg -i ~/Downloads/dbeaver-ce_25.0.0_amd64.deb
+
+---------- here ----------
 
 Шаг 2: Установка и настройка Kafka
 Установка Kafka
