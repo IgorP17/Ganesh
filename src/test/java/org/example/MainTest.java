@@ -2,7 +2,7 @@ package org.example;
 
 import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 public class MainTest {
 
@@ -11,7 +11,7 @@ public class MainTest {
         int a = 2;
         int b = 1;
 
-        assertEquals(a + b, new Main().sum(a, b), "Прачечная яяя");
+        assertEquals(a + b, new Main().sum(a, b));
 
     }
 }
