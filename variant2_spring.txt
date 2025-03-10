@@ -1,9 +1,5 @@
 Отличный вопрос! Если вы хотите заменить SparkJava на Spring Boot, это вполне возможно. Spring Boot предоставляет более мощные и гибкие инструменты для разработки веб-приложений, включая встроенную поддержку Kafka, REST API и работу с базами данных через Spring Data JPA.
 
-
----------- here ----------
-
-
 Давайте модифицируем ваш проект, чтобы использовать Spring Boot.
 Шаг 1: Создание Spring Boot проекта
 Зависимости (Maven pom.xml)
@@ -48,6 +44,7 @@ Copy
 Run HTML
 Шаг 2: Конфигурация Spring Boot
 Конфигурация Kafka и PostgreSQL
+---------- here ----------
 
 Создайте файл application.yml в src/main/resources:
 yaml
