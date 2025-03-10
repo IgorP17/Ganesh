@@ -99,8 +99,6 @@ psql -d app_db -U app_user
 sudo dpkg -i ~/Загрузки/dbeaver-ce_<версия>_amd64.deb
 sudo dpkg -i ~/Downloads/dbeaver-ce_25.0.0_amd64.deb
 
----------- here ----------
-
 Шаг 2: Установка и настройка Kafka
 Установка Kafka
 
@@ -109,8 +107,9 @@ sudo dpkg -i ~/Downloads/dbeaver-ce_25.0.0_amd64.deb
     Copy
 
     wget https://downloads.apache.org/kafka/3.6.0/kafka_2.13-3.6.0.tgz
-    tar -xzf kafka_2.13-3.6.0.tgz
-    cd kafka_2.13-3.6.0
+    -- делаем так wget https://dlcdn.apache.org/kafka/3.9.0/kafka_2.12-3.9.0.tgz
+    tar -xzf kafka_2.12-3.9.0.tgz
+    cd kafka_2.12-3.9.0
 
     Запустите Zookeeper и Kafka:
     bash
@@ -125,6 +124,47 @@ sudo dpkg -i ~/Downloads/dbeaver-ce_25.0.0_amd64.deb
 
     bin/kafka-topics.sh --create --topic requests --bootstrap-server localhost:9092
     bin/kafka-topics.sh --create --topic statuses --bootstrap-server localhost:9092
+
+------------------------------------------------------------------------------------------------
+ Установка Offset Explorer
+ 1. Скачивание Offset Explorer
+
+     Перейдите на официальный сайт Offset Explorer.
+     https://www.kafkatool.com/download.html
+
+    ну бля
+    sudo apt install openjdk-11-jdk
+
+    java -version
+    openjdk version "21.0.6" 2025-01-21
+    OpenJDK Runtime Environment (build 21.0.6+7-Ubuntu-124.04.1)
+    OpenJDK 64-Bit Server VM (build 21.0.6+7-Ubuntu-124.04.1, mixed mode, sharing)
+
+     оставляем
+sudo update-alternatives --config java
+There are 2 choices for the alternative java (providing /usr/bin/java).
+
+  Selection    Path                                         Priority   Status
+------------------------------------------------------------
+* 0            /usr/lib/jvm/java-21-openjdk-amd64/bin/java   2111      auto mode
+  1            /usr/lib/jvm/java-11-openjdk-amd64/bin/java   1111      manual mode
+  2            /usr/lib/jvm/java-21-openjdk-amd64/bin/java   2111      manual mode
+
+прописываем
+    echo 'export INSTALL4J_JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64' >> ~/.bashrc
+    source ~/.bashrc
+    echo $INSTALL4J_JAVA_HOME
+    /usr/lib/jvm/java-11-openjdk-amd64
+
+еще раз
+    ./offsetexplorer.sh
+
+    Zookeeper Host: localhost:2181 (если используется Zookeeper).
+
+    Kafka Brokers: localhost:9092 (если Kafka работает на localhost).
+------------------------------------------------------------------------------------------------
+
+REDIRECT TO spring ---------- here ----------
 
 Шаг 3: Пример кода Java-приложений
 Приложение 1 (Producer и Status Updater)
