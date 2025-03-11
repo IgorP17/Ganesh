@@ -1,0 +1,180 @@
+Если у вас два приложения (например, источник и приемник), и вы хотите запускать их отдельно, то вам нужно разделить их на два отдельных модуля или проекта. В Maven это можно сделать с помощью многомодульного проекта (multi-module project). Давайте разберём, как это сделать.
+1. Создание многомодульного проекта
+
+Структура проекта будет выглядеть так:
+Copy
+
+Ganesh/
+├── pom.xml (родительский POM)
+├── app1/ (источник)
+│   ├── pom.xml
+│   └── src/
+├── app2/ (приемник)
+│   ├── pom.xml
+│   └── src/
+
+2. Родительский pom.xml
+
+Создайте родительский pom.xml в корневой директории:
+xml
+Copy
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>Ganesh</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging> <!-- Указываем, что это родительский POM -->
+
+    <modules>
+        <module>app1</module> <!-- Подключаем модуль app1 -->
+        <module>app2</module> <!-- Подключаем модуль app2 -->
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Общие зависимости для всех модулей -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-parent</artifactId>
+                <version>3.1.5</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>
+
+Run HTML
+3. Модуль app1 (источник)
+
+Создайте папку app1 и добавьте в неё pom.xml:
+xml
+Copy
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.example</groupId>
+        <artifactId>Ganesh</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>app1</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+Run HTML
+4. Модуль app2 (приемник)
+
+Создайте папку app2 и добавьте в неё pom.xml:
+xml
+Copy
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.example</groupId>
+        <artifactId>Ganesh</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>app2</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+Run HTML
+5. Сборка и запуск
+
+    Перейдите в корневую директорию проекта (Ganesh/).
+
+    Соберите все модули:
+    bash
+    Copy
+
+    mvn clean package
+
+    Запустите приложения:
+
+        Запустите app1 (источник):
+        bash
+        Copy
+
+        java -jar app1/target/app1-1.0-SNAPSHOT.jar
+
+        Запустите app2 (приемник):
+        bash
+        Copy
+
+        java -jar app2/target/app2-1.0-SNAPSHOT.jar
+
+6. Почему это работает?
+
+    Каждый модуль (app1 и app2) собирается в отдельный JAR-файл.
+
+    Вы можете запускать их независимо друг от друга.
+
+    Родительский pom.xml управляет общими зависимостями и настройками.
+
+Итог
+
+    Создайте многомодульный проект с двумя модулями: app1 и app2.
+
+    Соберите проект с помощью mvn clean package.
+
+    Запустите каждый модуль отдельно с помощью java -jar.
+
+Если остались
