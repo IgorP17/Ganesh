@@ -66,6 +66,8 @@ spring:
     consumer:
       group-id: request-consumer
 
+
+
 Шаг 3: Модификация приложения 1 (Producer и Status Updater)
 Модель данных
 
@@ -73,7 +75,7 @@ spring:
 java
 Copy
 
-package com.example.demo.model;
+package org.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -95,9 +97,9 @@ public class Request {
 java
 Copy
 
-package com.example.demo.repository;
+package org.example.demo.repository;
 
-import com.example.demo.model.Request;
+import org.example.demo.model.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface RequestRepository extends JpaRepository<Request, Long> {
@@ -109,7 +111,7 @@ Kafka Producer
 java
 Copy
 
-package com.example.demo.service;
+package org.example.demo.service;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -133,11 +135,11 @@ REST Controller
 java
 Copy
 
-package com.example.demo.controller;
+package org.example.demo.controller;
 
-import com.example.demo.model.Request;
-import com.example.demo.repository.RequestRepository;
-import com.example.demo.service.KafkaProducerService;
+import org.example.demo.model.Request;
+import org.example.demo.repository.RequestRepository;
+import org.example.demo.service.KafkaProducerService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -162,6 +164,7 @@ public class RequestController {
     }
 }
 
+---------- here ----------
 Kafka Consumer (Status Updater)
 
 Создайте сервис для чтения статусов из Kafka и обновления базы данных:
