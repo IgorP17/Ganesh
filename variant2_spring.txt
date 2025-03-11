@@ -44,7 +44,6 @@ Copy
 Run HTML
 Шаг 2: Конфигурация Spring Boot
 Конфигурация Kafka и PostgreSQL
----------- here ----------
 
 Создайте файл application.yml в src/main/resources:
 yaml

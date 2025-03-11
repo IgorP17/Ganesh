@@ -1,4 +1,4 @@
-package org.example.demo.service;
+package demo.service;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;

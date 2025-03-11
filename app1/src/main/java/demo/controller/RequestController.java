@@ -1,8 +1,8 @@
-package org.example.demo.controller;
+package demo.controller;
 
-import org.example.demo.model.Request;
-import org.example.demo.repository.RequestRepository;
-import org.example.demo.service.KafkaProducerService;
+import demo.model.Request;
+import demo.repository.RequestRepository;
+import demo.service.KafkaProducerService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

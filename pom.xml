@@ -7,6 +7,11 @@
     <groupId>org.example</groupId>
     <artifactId>Ganesh</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>main0</module>
+        <module>app1</module>
+    </modules>
 
     <!-- Родительский POM для Spring Boot -->
     <parent>
