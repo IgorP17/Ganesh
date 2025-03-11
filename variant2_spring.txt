@@ -165,6 +165,7 @@ public class RequestController {
 }
 
 ---------- here ----------
+---------- внезапно modules !!!! ----------
 Kafka Consumer (Status Updater)
 
 Создайте сервис для чтения статусов из Kafka и обновления базы данных:
