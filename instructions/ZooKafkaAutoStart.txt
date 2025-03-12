@@ -1,6 +1,11 @@
 Чтобы автоматически запускать Zookeeper и Kafka при загрузке системы, вы можете создать systemd-сервисы для каждого из них. Это позволит управлять их запуском, остановкой и автозапуском через стандартные команды Linux.
 1. Создание systemd-сервиса для Zookeeper
 
+--sudo adduser kafka нафиг
+--id kafka
+--sudo chown -R kafka:kafka /home/igor/Downloads/kafka_2.12-3.9.0
+--sudo chmod +x /home/igor/Downloads/kafka_2.12-3.9.0/bin/*.sh
+
     Создайте файл сервиса для Zookeeper:
     bash
     Copy
@@ -17,15 +22,15 @@
 
     [Service]
     Type=simple
-    User=kafka
-    ExecStart=/path/to/kafka/bin/zookeeper-server-start.sh /path/to/kafka/config/zookeeper.properties
-    ExecStop=/path/to/kafka/bin/zookeeper-server-stop.sh
+    User=kafka -- НЕТ igor AAAAAAAAAAAAAAAAAAA
+    ExecStart=/home/igor/Downloads/kafka_2.12-3.9.0/bin/zookeeper-server-start.sh /home/igor/Downloads/kafka_2.12-3.9.0/config/zookeeper.properties
+    ExecStop=/home/igor/Downloads/kafka_2.12-3.9.0/bin/zookeeper-server-stop.sh
     Restart=on-abnormal
 
     [Install]
     WantedBy=multi-user.target
 
-        Замените /path/to/kafka на путь к директории, где установлен Kafka.
+        Замените /home/igor/Downloads/kafka_2.12-3.9.0 на путь к директории, где установлен Kafka.
 
         Убедитесь, что пользователь kafka имеет права на выполнение скриптов и доступ к файлам Kafka.
 
@@ -73,15 +78,15 @@
 
     [Service]
     Type=simple
-    User=kafka
-    ExecStart=/path/to/kafka/bin/kafka-server-start.sh /path/to/kafka/config/server.properties
-    ExecStop=/path/to/kafka/bin/kafka-server-stop.sh
+    User=igor
+    ExecStart=/home/igor/Downloads/kafka_2.12-3.9.0/bin/kafka-server-start.sh /home/igor/Downloads/kafka_2.12-3.9.0/config/server.properties
+    ExecStop=/home/igor/Downloads/kafka_2.12-3.9.0/bin/kafka-server-stop.sh
     Restart=on-abnormal
 
     [Install]
     WantedBy=multi-user.target
 
-        Замените /path/to/kafka на путь к директории, где установлен Kafka.
+        Замените /home/igor/Downloads/kafka_2.12-3.9.0 на путь к директории, где установлен Kafka.
 
         Убедитесь, что пользователь kafka имеет права на выполнение скриптов и доступ к файлам Kafka.
 
@@ -112,7 +117,7 @@
     sudo systemctl status kafka
 
 3. Проверка автозапуска
-
+---------- here ----------
     Перезагрузите систему:
     bash
     Copy
