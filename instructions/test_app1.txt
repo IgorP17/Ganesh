@@ -2,7 +2,10 @@ Copy
 
 curl -X POST http://localhost:8080/api/send \
      -H "Content-Type: application/json" \
-     -d '{"message": "Hello, Kafka!"}'
+     -d '{"message": "Hello, Kafka! 2025-03-12 23-08-00"}'
 
 патаму что
     @RequestMapping("/api")
+
+ вижу в топике offset explorer
+ 0	1	3	{"message": "Hello, Kafka! 2025-03-12 23-10-00"}	2025-03-12 23:10:06.768
