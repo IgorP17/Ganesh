@@ -1,0 +1,8 @@
+Copy
+
+curl -X POST http://localhost:8080/api/send \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Hello, Kafka!"}'
+
+патаму что
+    @RequestMapping("/api")
