@@ -77,7 +77,7 @@ psql -d app_db -U app_user
         sql
         Copy
 
-        CREATE TABLE requests (
+        CREATE TABLE requests ( ---- ААААА в сприге будет таблица Request
             id SERIAL PRIMARY KEY,
             data TEXT NOT NULL,
             status VARCHAR(50) DEFAULT 'PENDING'
