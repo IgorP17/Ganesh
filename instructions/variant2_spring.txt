@@ -283,6 +283,7 @@ public class KafkaConsumerService {
     mvn clean package
     java -jar app1/target/app1.jar
     java -jar app1/target/app1-1.0-SNAPSHOT.jar
+    java -jar app2/target/app2-1.0-SNAPSHOT.jar
     java -jar app2/target/app2.jar
 
 Итог

@@ -1,0 +1,17 @@
+server:
+  port: 8081 # Укажите другой порт
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/app_db
+    username: app_user
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: app2-consumer-group
+      auto-offset-reset: earliest
