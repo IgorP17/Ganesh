@@ -163,7 +163,7 @@ public class RequestController {
     }
 }
 
----------- here ----------
+
 ---------- внезапно modules !!!! ----------
 Kafka Consumer (Status Updater)
 
@@ -201,7 +201,6 @@ public class KafkaConsumerService {
 
 Шаг 4: Модификация приложения 2 (Consumer)
 Модель данных
-
 Создайте сущность для таблицы processed_requests:
 java
 Copy
@@ -272,6 +271,7 @@ public class KafkaConsumerService {
     }
 }
 
+---------- here ----------
 Шаг 5: Запуск приложений
 
     Запустите PostgreSQL и Kafka.

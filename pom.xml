@@ -11,6 +11,7 @@
     <modules>
         <module>main0</module>
         <module>app1</module>
+        <module>app2</module>
     </modules>
 
     <!-- Родительский POM для Spring Boot -->
