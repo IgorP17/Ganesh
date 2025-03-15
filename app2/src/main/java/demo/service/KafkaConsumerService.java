@@ -29,7 +29,6 @@ public class KafkaConsumerService {
         processedRequest.setStatus("SUCCESS");
         processedRequestRepository.save(processedRequest);
 
-
-//        kafkaProducerService.sendMessage("statuses", key, key + ":SUCCESS");
+        kafkaProducerService.sendMessage("statuses", key, key + ":SUCCESS");
     }
 }

@@ -15,6 +15,7 @@ public class KafkaConsumerService {
 
     @KafkaListener(topics = "statuses", groupId = "status-updater")
     public void updateStatus(String status) {
+        System.out.println(status);
         String[] parts = status.split(":");
         Long id = Long.parseLong(parts[0]);
         String newStatus = parts[1];
