@@ -14,4 +14,6 @@ spring:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: app2-consumer-group
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       auto-offset-reset: earliest

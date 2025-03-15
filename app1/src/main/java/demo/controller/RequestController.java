@@ -22,7 +22,7 @@ public class RequestController {
         request.setData(data);
         request = requestRepository.save(request);
 
-        kafkaProducerService.sendMessage("requests", request.getId().toString(), data);
+        kafkaProducerService.sendMessage("requests", request.getId(), data);
         return "Request saved with ID: " + request.getId();
     }
 }
