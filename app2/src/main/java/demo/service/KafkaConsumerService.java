@@ -6,6 +6,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class KafkaConsumerService {
     private final ProcessedRequestRepository processedRequestRepository;
@@ -26,8 +28,14 @@ public class KafkaConsumerService {
         ProcessedRequest processedRequest = new ProcessedRequest();
         processedRequest.setRequestId(key);
         processedRequest.setData(data);
+        processedRequest.setProcessedAt(LocalDateTime.now());
         processedRequest.setStatus("SUCCESS");
-        processedRequestRepository.save(processedRequest);
+        try {
+            processedRequestRepository.save(processedRequest);
+            System.out.println("Request saved to database: " + processedRequest);
+        } catch (Exception e) {
+            System.err.println("Error processing request: " + e.getMessage());
+        }
 
         kafkaProducerService.sendMessage("statuses", key, key + ":SUCCESS");
     }
