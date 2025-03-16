@@ -3,6 +3,8 @@ package demo.service;
 import demo.model.ProcessedRequest;
 import demo.repository.ProcessedRequestRepository;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
 public class KafkaConsumerService {
     private final ProcessedRequestRepository processedRequestRepository;
     private final KafkaProducerService kafkaProducerService;
+    private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerService.class);
 
     public KafkaConsumerService(ProcessedRequestRepository processedRequestRepository, KafkaProducerService kafkaProducerService) {
         this.processedRequestRepository = processedRequestRepository;
@@ -22,8 +25,8 @@ public class KafkaConsumerService {
     public void processRequest(ConsumerRecord<Long, String> record) {
         Long key = record.key(); // Получаем ключ
         String data = record.value(); // Получаем значение
-        System.out.println("Received key: " + key + " (Type: " + key.getClass().getSimpleName() + ")");
-        System.out.println("Received data: " + data + " (Type: " + data.getClass().getSimpleName() + ")");
+        logger.info("Received key: {} (Type: {})", key, key.getClass().getSimpleName());
+        logger.info("Received data: {} (Type: {})", data, data.getClass().getSimpleName());
 
         ProcessedRequest processedRequest = new ProcessedRequest();
         processedRequest.setRequestId(key);
@@ -32,9 +35,9 @@ public class KafkaConsumerService {
         processedRequest.setStatus("SUCCESS");
         try {
             processedRequestRepository.save(processedRequest);
-            System.out.println("Request saved to database: " + processedRequest);
+            logger.info("Request saved to database: {}", processedRequest);
         } catch (Exception e) {
-            System.err.println("Error processing request: " + e.getMessage());
+            logger.error("Error processing request: {}", e.getMessage(), e);
         }
 
         kafkaProducerService.sendMessage("statuses", key, key + ":SUCCESS");
