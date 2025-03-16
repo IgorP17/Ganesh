@@ -2,7 +2,7 @@ Copy
 
 curl -X POST http://localhost:8080/api/send \
      -H "Content-Type: application/json" \
-     -d '{"message": "Hello, Kafka! 2025-03-16 10-55-00"}'
+     -d '{"message": "Hello, Kafka! 2025-03-16 16-30-00"}'
 
 патаму что
     @RequestMapping("/api")
