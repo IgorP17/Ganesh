@@ -1,0 +1,111 @@
+1. Создание app3
+a. Структура проекта
+
+Создайте новый модуль app3 в вашем проекте. Структура будет выглядеть так:
+Copy
+
+Ganesh
+├── app1
+├── app2
+├── app3
+│   ├── src
+│   │   └── main
+│   │       ├── java
+│   │       │   └── demo
+│   │       │       └── App3Application.java
+│   │       └── resources
+│   │           ├── static
+│   │           │   └── index.html
+│   │           └── application.yml
+│   └── pom.xml
+└── pom.xml
+
+b. Зависимости в pom.xml
+
+Добавьте зависимости для Spring Boot и Spring Web в pom.xml модуля app3:
+xml
+Copy
+
+<dependencies>
+    <!-- Spring Boot Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Boot Thymeleaf (опционально, если хотите использовать шаблонизатор) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-thymeleaf</artifactId>
+    </dependency>
+
+    <!-- Логирование -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-log4j2</artifactId>
+    </dependency>
+</dependencies>
+
+Run HTML
+c. Конфигурация application.yml
+
+Настройте порт для app3 (например, 8082):
+yaml
+Copy
+
+server:
+  port: 8082
+
+2. Создание веб-сайта
+a. HTML-форма
+
+Создайте файл index.html в директории src/main/resources/static:
+html
+Copy
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Web Interface</title>
+</head>
+<body>
+    <h1>Отправить сообщение в Kafka</h1>
+
+    <!-- Форма для отправки сообщения -->
+    <div>
+        <textarea id="messageInput" rows="4" cols="50">{"message": "Hello, Kafka! 2025-03-16 17-12-00"}</textarea>
+        <br>
+        <button onclick="sendMessage()">Отправить</button>
+    </div>
+
+    <!-- Ответ от сервера -->
+    <div>
+        <h2>Ответ:</h2>
+        <p id="response"></p>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+
+            // Отправляем сообщение в app1
+            const response = await fetch('http://localhost:8081/api/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
+
+            // Получаем ответ от app1
+            const data = await response.text();
+            document.getElementById('response').innerText = data;
+        }
+    </script>
+</body>
+</html>
+
+Откройте сайт в браузере: http://localhost:8082
+========================================================================================================

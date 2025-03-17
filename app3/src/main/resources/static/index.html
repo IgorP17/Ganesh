@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kafka Web Interface</title>
+</head>
+<body>
+<h1>Отправить сообщение в Kafka</h1>
+
+<!-- Форма для отправки сообщения -->
+<div>
+    <textarea id="messageInput" rows="4" cols="50">{"message": "Hello, Kafka! 2025-03-16 17-12-00"}</textarea>
+    <br>
+    <button onclick="sendMessage()">Отправить</button>
+</div>
+
+<!-- Ответ от сервера -->
+<div>
+    <h2>Ответ:</h2>
+    <p id="response"></p>
+</div>
+
+<script>
+    async function sendMessage() {
+    const message = document.getElementById('messageInput').value;
+
+    console.log("Sending message:", message); // Логируем отправляемое сообщение
+
+    try {
+        const response = await fetch('http://localhost:8080/api/send', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: message,
+        });
+
+        const data = await response.text();
+        console.log("Response from app1:", data); // Логируем ответ от app1
+        document.getElementById('response').innerText = data;
+    } catch (error) {
+        console.error("Error sending message:", error); // Логируем ошибку
+        document.getElementById('response').innerText = "Error: " + error.message;
+    }
+}
+</script>
+</body>
+</html>
