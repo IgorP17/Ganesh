@@ -3,30 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kafka Web Interface</title>
+    <title>Request Manager</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        #response, #requestData {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+
+        pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
-<h1>Отправить сообщение post endoint/h1>
+<h1>Управление запросами</h1>
 
-<!-- Форма для отправки сообщения -->
-<div>
-    <h2>Отправить сообщение</h2>
-    <textarea id="messageInput" rows="4" cols="50">
+<div class="container">
+    <!-- Форма для отправки сообщения -->
+    <div>
+        <h2>Отправить сообщение</h2>
+        <textarea id="messageInput" rows="4">
 {
-    "message": "Hello, Kafka! 2025-03-17 22-12-00"
+    "message": "Hello, Database! 2025-03-17 22-12-00"
 }
-        </textarea>
-    <br>
-    <button onclick="sendMessage()">Отправить</button>
-    <p id="response"></p>
-</div>
+            </textarea>
+        <br>
+        <button onclick="sendMessage()">Отправить</button>
+        <p id="response"></p>
+    </div>
 
-<!-- Форма для поиска по ID -->
-<div>
-    <h2>Найти запрос по ID в бд</h2>
-    <input type="text" id="requestId" placeholder="Введите ID запроса">
-    <button onclick="findRequest()">Поиск</button>
-    <pre id="requestData"></pre>
+    <!-- Форма для поиска по ID -->
+    <div>
+        <h2>Найти запрос по ID</h2>
+        <input type="text" id="requestId" placeholder="Введите ID запроса">
+        <button onclick="findRequest()">Поиск</button>
+        <pre id="requestData"></pre>
+    </div>
 </div>
 
 <script>
