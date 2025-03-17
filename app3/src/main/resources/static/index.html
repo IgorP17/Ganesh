@@ -6,44 +6,64 @@
     <title>Kafka Web Interface</title>
 </head>
 <body>
-<h1>Отправить сообщение в Kafka</h1>
+<h1>Отправить сообщение post endoint/h1>
 
 <!-- Форма для отправки сообщения -->
 <div>
-    <textarea id="messageInput" rows="4" cols="50">{"message": "Hello, Kafka! 2025-03-16 17-12-00"}</textarea>
+    <h2>Отправить сообщение</h2>
+    <textarea id="messageInput" rows="4" cols="50">
+{
+    "message": "Hello, Kafka! 2025-03-17 22-12-00"
+}
+        </textarea>
     <br>
     <button onclick="sendMessage()">Отправить</button>
-</div>
-
-<!-- Ответ от сервера -->
-<div>
-    <h2>Ответ:</h2>
     <p id="response"></p>
 </div>
 
+<!-- Форма для поиска по ID -->
+<div>
+    <h2>Найти запрос по ID в бд</h2>
+    <input type="text" id="requestId" placeholder="Введите ID запроса">
+    <button onclick="findRequest()">Поиск</button>
+    <pre id="requestData"></pre>
+</div>
+
 <script>
+    // Функция для отправки сообщения
     async function sendMessage() {
-    const message = document.getElementById('messageInput').value;
+        const message = JSON.parse(document.getElementById('messageInput').value);
 
-    console.log("Sending message:", message); // Логируем отправляемое сообщение
+        try {
+            const response = await fetch('http://localhost:8080/api/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            });
 
-    try {
-        const response = await fetch('http://localhost:8080/api/send', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: message,
-        });
-
-        const data = await response.text();
-        console.log("Response from app1:", data); // Логируем ответ от app1
-        document.getElementById('response').innerText = data;
-    } catch (error) {
-        console.error("Error sending message:", error); // Логируем ошибку
-        document.getElementById('response').innerText = "Error: " + error.message;
+            const data = await response.text();
+            document.getElementById('response').innerText = data;
+        } catch (error) {
+            console.error("Error sending message:", error);
+            document.getElementById('response').innerText = "Error: " + error.message;
+        }
     }
-}
+
+    // Функция для поиска запроса по ID
+    async function findRequest() {
+        const requestId = document.getElementById('requestId').value;
+
+        try {
+            const response = await fetch(`http://localhost:8080/api/request/${requestId}`);
+            const data = await response.text();
+            document.getElementById('requestData').innerText = data;
+        } catch (error) {
+            console.error("Error finding request:", error);
+            document.getElementById('requestData').innerText = "Error: " + error.message;
+        }
+    }
 </script>
 </body>
 </html>
