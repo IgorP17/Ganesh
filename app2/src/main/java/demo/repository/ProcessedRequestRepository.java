@@ -3,8 +3,8 @@ package demo.repository;
 import demo.model.ProcessedRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
+import java.util.Optional;
 
 public interface ProcessedRequestRepository extends JpaRepository<ProcessedRequest, Long> {
-    List<ProcessedRequest> findByRequestId(Long requestId);
+    Optional<ProcessedRequest> findByRequestId(Long requestId);
 }

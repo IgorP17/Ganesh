@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/processed-requests")
@@ -18,7 +18,7 @@ public class ProcessedRequestController {
     private ProcessedRequestRepository processedRequestRepository;
 
     @GetMapping("/by-request-id/{requestId}")
-    public List<ProcessedRequest> getProcessedRequestsByRequestId(@PathVariable Long requestId) {
+    public Optional<ProcessedRequest> getProcessedRequestsByRequestId(@PathVariable Long requestId) {
         return processedRequestRepository.findByRequestId(requestId);
     }
 }
