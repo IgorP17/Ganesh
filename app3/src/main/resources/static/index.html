@@ -110,6 +110,15 @@
         <h3>Таблица request</h3>
         <pre id="requestData"></pre>
     </div>
+
+    <!-- Форма для поиска по ID в processed_request-->
+    <div>
+        <h2>Найти запрос по ID в processed_request</h2>
+        <input type="text" id="requestIdProcessed" placeholder="Введите ID запроса">
+        <button onclick="findProcessedRequest()">Поиск</button>
+        <h3>Таблица processed_request</h3>
+        <pre id="requestDataProcessed"></pre>
+    </div>
 </div>
 
 <script>
@@ -145,6 +154,20 @@
         } catch (error) {
             console.error("Error finding request:", error);
             document.getElementById('requestData').innerText = "Error: " + error.message;
+        }
+    }
+
+    // Функция для поиска запроса по ID в processed_request
+    async function findProcessedRequest() {
+        const requestIdProcessed = document.getElementById('requestIdProcessed').value;
+
+        try {
+            const response = await fetch(`http://localhost:8081/api/processed-requests/by-request-id/${requestIdProcessed}`);
+            const data = await response.text();
+            document.getElementById('requestDataProcessed').innerText = data;
+        } catch (error) {
+            console.error("Error finding request:", error);
+            document.getElementById('requestDataProcessed').innerText = "Error: " + error.message;
         }
     }
 </script>

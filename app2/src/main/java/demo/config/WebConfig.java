@@ -9,7 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // Разрешаем CORS для всех эндпоинтов /api
+        registry.addMapping("/api/processed-requests/**") // Разрешаем CORS для всех эндпоинтов /api
                 .allowedOrigins("http://localhost:8082") // Разрешаем запросы от app3
                 .allowedMethods("GET", "POST", "PUT", "DELETE") // Разрешаем методы
                 .allowedHeaders("*") // Разрешаем все заголовки
