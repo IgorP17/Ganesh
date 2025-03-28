@@ -15,7 +15,7 @@ public class ProcessedRequestService {
 
     // Ищем запрос по ID
     public String findByRequestId(Long requestId) {
-        Optional<ProcessedRequest> requestOptional = processedRequestRepository.findByRequestId(requestId);
+        Optional<ProcessedRequest> requestOptional = processedRequestRepository.findById(requestId);
 
         if (requestOptional.isPresent()) {
             ProcessedRequest request = requestOptional.get();

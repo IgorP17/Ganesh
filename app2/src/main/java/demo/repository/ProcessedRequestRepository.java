@@ -3,8 +3,7 @@ package demo.repository;
 import demo.model.ProcessedRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
-
 public interface ProcessedRequestRepository extends JpaRepository<ProcessedRequest, Long> {
-    Optional<ProcessedRequest> findByRequestId(Long requestId);
+    // Было: List<ProcessedRequest> findByRequestId(Long requestId);
+    ProcessedRequest findFirstByRequestId(Long requestId); // Возвращает первую найденную запись
 }
