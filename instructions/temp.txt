@@ -1,0 +1,24 @@
+Шаг 4: Запуск приложений
+
+    Запустите app2:
+    bash
+    Copy
+
+    cd app2
+    mvn spring-boot:run
+
+    Запустите app3:
+    bash
+    Copy
+
+    cd app3
+    mvn spring-boot:run
+
+    Откройте браузер и перейдите по адресу:
+    Copy
+
+    http://localhost:8080
+
+    Введите request_id и нажмите "Search", чтобы увидеть данные из таблицы processed_request.
+
+
