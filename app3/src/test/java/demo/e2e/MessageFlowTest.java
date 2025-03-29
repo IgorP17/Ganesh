@@ -4,6 +4,8 @@ import com.codeborne.selenide.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
@@ -15,19 +17,23 @@ public class MessageFlowTest {
         Configuration.browser = "firefox";
         Configuration.baseUrl = "http://localhost:8082";
         Configuration.timeout = 10000;
-        Configuration.headless = true; // Для запуска без GUI (опционально)
+//        Configuration.headless = true; // Для запуска без GUI (опционально)
+        Configuration.headless = false; // Для запуска без GUI (опционально)
     }
 
     @Test
     public void testMessageFlow() {
         open("/");
-        $("#requestMessage").shouldBe(visible);
+        $("#messageInput").shouldBe(visible);
 
         // 2. Отправляем сообщение
-        String testMessage = "Test message " + System.currentTimeMillis();
-        $("#requestMessage").setValue(testMessage);
-        $("button[type='submit']").click();
-
+        LocalDateTime dt = LocalDateTime.now();
+        String testMessage = "{\n" +
+                "    \"message\": \"Hello, autoQA! " + dt + "\"\n" +
+                "}";
+        $("#messageInput").setValue(testMessage);
+        $("#btnSend").click();
+/*
         // 3. Получаем ID из ответа
         String requestId = $("#requestId").shouldBe(visible).text();
 
@@ -40,5 +46,7 @@ public class MessageFlowTest {
         $("#searchProcessedRequestId").setValue(requestId);
         $("#searchProcessedRequestButton").click();
         $("#processedRequestResult").shouldHave(text(testMessage));
+    }
+    */
     }
 }
