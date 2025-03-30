@@ -1,0 +1,137 @@
+Вот правильная настройка с вынесением ВСЕХ версий в properties корневого pom.xml:
+1. Обновляем корневой pom.xml
+
+Добавьте в секцию <properties>:
+xml
+Copy
+
+<properties>
+    <!-- Версии Allure -->
+    <allure.version>2.27.0</allure.version>
+    <aspectj.version>1.9.22</aspectj.version>
+
+    <!-- Версии плагинов -->
+    <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+    <allure-maven-plugin.version>2.12.1</allure-maven-plugin.version>
+
+    <!-- Версии для тестов -->
+    <selenide.version>6.19.1</selenide.version>
+    <junit.version>4.13.2</junit.version>
+</properties>
+
+Run HTML
+2. Полная конфигурация Allure
+
+В корневом pom.xml обновляем секции:
+xml
+Copy
+
+<build>
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <argLine>
+                        -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                    </argLine>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjweaver</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>io.qameta.allure</groupId>
+                <artifactId>allure-maven-plugin</artifactId>
+                <version>${allure-maven-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </pluginManagement>
+
+    <plugins>
+        <plugin>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit4</artifactId>
+            <version>${allure.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-selenide</artifactId>
+            <version>${allure.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+Run HTML
+3. Для каждого модуля (app1, app2, app3)
+
+В pom.xml каждого модуля оставляем только:
+xml
+Copy
+
+<dependencies>
+    <dependency>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-selenide</artifactId>
+    </dependency>
+</dependencies>
+
+Run HTML
+4. Проверка конфигурации
+
+Выполните:
+bash
+Copy
+
+mvn help:effective-pom | grep -A 5 "allure"
+
+Должны увидеть корректные версии всех компонентов.
+5. Запуск тестов
+bash
+Copy
+
+mvn clean test allure:serve
+
+Если остаются проблемы:
+
+    Убедитесь, что в проекте нет дублирующих зависимостей:
+
+bash
+Copy
+
+mvn dependency:tree | grep allure
+
+    Очистите кэш полностью:
+
+bash
+Copy
+
+mvn dependency:purge-local-repository
+rm -rf ~/.m2/repository/io/qameta
+
+    Для принудительного обновления:
+
+bash
+Copy
+
+mvn clean install -U -e
+
+Все версии теперь централизовано управляются из корневого POM-файла, что обеспечивает согласованность зависимостей во всех модулях.
