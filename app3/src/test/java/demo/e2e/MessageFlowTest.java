@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
+import static java.time.Duration.ofSeconds;
 
 public class MessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(MessageFlowTest.class);
@@ -23,7 +24,7 @@ public class MessageFlowTest {
         Configuration.baseUrl = "http://localhost:8082";
         Configuration.timeout = 10000;
 //        Configuration.headless = true; // Для запуска без GUI (опционально)
-        Configuration.headless = false; // Для запуска без GUI (опционально)
+        Configuration.headless = false; // Для запуска c GUI (опционально)
     }
 
     @Test
@@ -38,11 +39,17 @@ public class MessageFlowTest {
                 "    \"message\":\"" + message + "\"\n" +
                 "}";
         $("#messageInput").setValue(testMessage);
-        $("#btnSend").shouldBe(visible); // Ждём появления кнопки
+        $("#btnSend").shouldBe(visible).click();
 //        executeJavaScript("document.getElementById('btnSend').classList.remove('disabled')");
 //        $("#btnSend").click();
-        executeJavaScript("document.getElementById('btnSend').click()");
+//        executeJavaScript("document.getElementById('btnSend').click()");
+
         // 3. Получаем ID из ответа
+        $("#response")
+                .shouldBe(visible, ofSeconds(10))
+                .shouldHave(matchText(
+                        "Request saved with ID: \\d+"
+                ));
         String response = $("#response").shouldBe(visible).text();
         logger.info("Got request: {}", response);
         // 3.1. Создаем Pattern с регулярным выражением
