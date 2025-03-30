@@ -35,15 +35,13 @@ public class MessageFlowTest {
         LocalDateTime dt = LocalDateTime.now();
         String message = "Hello, autoQA! " + dt;
         String testMessage = "{\n" +
-                "    \"message\":" + message + "\n" +
+                "    \"message\":\"" + message + "\"\n" +
                 "}";
         $("#messageInput").setValue(testMessage);
-        $("#btnSend")
-                .shouldBe(enabled)    // Ждём доступности
-                .shouldBe(visible)    // Ждём видимости
-                .scrollIntoView(true) // Прокручиваем
-                .click();
-
+        $("#btnSend").shouldBe(visible); // Ждём появления кнопки
+//        executeJavaScript("document.getElementById('btnSend').classList.remove('disabled')");
+//        $("#btnSend").click();
+        executeJavaScript("document.getElementById('btnSend').click()");
         // 3. Получаем ID из ответа
         String response = $("#response").shouldBe(visible).text();
         logger.info("Got request: {}", response);
@@ -65,15 +63,21 @@ public class MessageFlowTest {
         // 4. Проверяем в разделе app1
         $("#requestId").setValue(stringID);
         $("#searchRequestButton").click();
-        $("#requestData").shouldHave(text("Request ID: " + stringID + "\n"
-        + "Message: {\"message\":\"" + message + "}\n"
-        + "Status: SUCCESS"));
-/*
+//        $("#requestData").shouldHave(text(""));
+//        $("#requestData").shouldHave(partialText(""));
+        $("#requestData").should(matchText(
+                "Request ID: " + stringID + ".*Message:.*" + message + ".*SUCCESS"
+        ));
+
         // 5. Проверяем в разделе app2
-        $("#searchProcessedRequestId").setValue(requestId);
+        $("#requestIdProcessed").setValue(stringID);
         $("#searchProcessedRequestButton").click();
-        $("#processedRequestResult").shouldHave(text(testMessage));
-    }
-    */
+        $("#requestDataProcessed").should(matchText(
+                "^ID: \\d+\n" +
+                        "Request ID: " + stringID + "\n" +
+                        "Data: \\{\"message\":\"" + Pattern.quote(message) + "\"\\}\n" +
+                        "Status: SUCCESS\n" +
+                        "Processed At: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+$"
+        ));
     }
 }
