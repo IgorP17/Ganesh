@@ -23,8 +23,8 @@ public class MessageFlowTest {
         Configuration.browser = "firefox";
         Configuration.baseUrl = "http://localhost:8082";
         Configuration.timeout = 10000;
-//        Configuration.headless = true; // Для запуска без GUI (опционально)
-        Configuration.headless = false; // Для запуска c GUI (опционально)
+        Configuration.headless = true; // Для запуска без GUI (опционально)
+//        Configuration.headless = false; // Для запуска c GUI (опционально)
     }
 
     @Test
