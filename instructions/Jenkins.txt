@@ -1,0 +1,106 @@
+1. java -version  # Проверяем установку (должна быть версия 17+)
+
+2. Добавление репозитория Jenkins
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+3. Установка Jenkins
+sudo apt update
+sudo apt install jenkins -y
+
+4. Запуск и активация Jenkins
+sudo systemctl start jenkins
+sudo systemctl enable jenkins  # Для автозапуска при загрузке
+sudo systemctl status jenkins  # Проверяем статус (должен быть active)
+
+5. Открытие порта (если включен firewall)
+sudo ufw allow 8080
+sudo ufw enable
+sudo ufw status
+
+6. Первоначальная настройка ---------------    идем настраивать 8083 порт
+    Откройте в браузере:
+    http://localhost:8080
+    или
+    http://ваш-ip-адрес:8080
+
+    Получите пароль администратора:
+
+    sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+        Следуйте мастеру установки:
+
+            Выберите "Install suggested plugins"
+
+            Создайте первого администратора
+
+            Сохраните URL (можно оставить http://localhost:8080)
+
+7. Настройка для работы с вашим проектом
+sudo apt install git maven -y
+
+Проверка доступа к GitHub:
+sudo -u jenkins ssh-keygen  # Генерация SSH-ключа для Jenkins
+sudo cat /var/lib/jenkins/.ssh/id_rsa.pub
+
+Добавьте этот ключ в Deploy Keys вашего репозитория на GitHub.
+
+-----
+Полезные команды
+
+    Перезапуск Jenkins:
+    sudo systemctl restart jenkins
+
+    Просмотр логов:
+    sudo tail -f /var/log/jenkins/jenkins.log
+
+------ на 8083
+sudo systemctl stop jenkins
+sudo nano /etc/default/jenkins
+HTTP_PORT=8080 ----- нужный
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+http://localhost:8083
+
+проверить логи
+sudo journalctl -u jenkins -f
+
+найти
+sudo netstat -tulnp | grep 8083
+sudo lsof -i :8083
+
+
+Для изменения в systemd (если используется):
+bash
+Copy
+
+sudo systemctl edit jenkins
+
+Добавьте:
+Copy
+
+[Service]
+Environment="JENKINS_PORT=8083"
+
+Затем:
+bash
+Copy
+
+sudo systemctl daemon-reload
+sudo systemctl restart jenkins
+
+--------------------------------------------!!!!!!!!!!!!!!!!!!!!!
+sudo systemctl stop jenkins
+sudo pkill -f jenkins  # Принудительное завершение всех процессов
+
+sudo nano /etc/default/jenkins
+
+sudo nano /usr/lib/systemd/system/jenkins.service
+    Environment="JENKINS_PORT=8083"
+
+sudo systemctl daemon-reload
+
+sudo systemctl start jenkins
