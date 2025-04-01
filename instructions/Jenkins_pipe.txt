@@ -1,0 +1,103 @@
+Привет! Давай создадим Jenkins pipeline для вашего проекта. Вот пример Jenkinsfile, который реализует описанные шаги:
+groovy
+Copy
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    // Очищаем workspace перед новым билдом
+                    cleanWs()
+                    // Клонируем репозиторий
+                    git url: 'https://github.com/IgorP17/Ganesh', branch: 'main'
+                }
+            }
+        }
+
+        stage('Check Apps Status') {
+            steps {
+                script {
+                    // Проверяем статус приложений
+                    def app1Running = sh(script: 'ps aux | grep "app1" | grep -v grep', returnStatus: true) == 0
+                    def app2Running = sh(script: 'ps aux | grep "app2" | grep -v grep', returnStatus: true) == 0
+                    def app3Running = sh(script: 'ps aux | grep "app3" | grep -v grep', returnStatus: true) == 0
+
+                    if (!app1Running) {
+                        sh './app1/start.sh' // Замените на реальную команду запуска app1
+                    }
+                    if (!app2Running) {
+                        sh './app2/start.sh' // Замените на реальную команду запуска app2
+                    }
+                    if (!app3Running) {
+                        sh './app3/start.sh' // Замените на реальную команду запуска app3
+                    }
+
+                    // Даем приложениям время на запуск
+                    sleep time: 30, unit: 'SECONDS'
+                }
+            }
+        }
+
+        stage('Run E2E Tests') {
+            steps {
+                script {
+                    // Переходим в директорию с app3 и запускаем тесты
+                    dir('app3') {
+                        sh 'mvn test -Dtest=*E2ETest*' // Замените на реальную команду запуска тестов
+                    }
+
+                    // Сохраняем результаты тестов
+                    junit 'app3/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('Stop Apps') {
+            steps {
+                script {
+                    // Останавливаем приложения
+                    sh 'pkill -f "app1" || true'
+                    sh 'pkill -f "app2" || true'
+                    sh 'pkill -f "app3" || true'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Визуализация результатов
+            script {
+                // Здесь можно добавить логику для отображения динамики результатов
+                // Например, сравнение с предыдущими запусками
+                echo "Сборка завершена: ${currentBuild.result}"
+
+                // Архивируем результаты тестов
+                archiveArtifacts artifacts: 'app3/target/surefire-reports/*.xml', allowEmptyArchive: true
+            }
+        }
+    }
+}
+
+Важные замечания:
+
+    Вам нужно адаптировать команды запуска/остановки приложений (start.sh, pkill) под ваш конкретный случай.
+
+    Убедитесь, что в вашем проекте:
+
+        E2E тесты действительно находятся в app3
+
+        Тесты запускаются через Maven с указанным параметром
+
+    Для отображения динамики результатов:
+
+        Jenkins может показывать графики изменения результатов тестов через JUnit plugin
+
+        Для более сложной аналитики можно использовать дополнительные плагины или внешние системы
+
+    Рекомендую добавить обработку ошибок и уведомления о неудачных сборках.
+
+Хотите, чтобы я уточнил какие-то части пайплайна или добавил дополнительные функции?
