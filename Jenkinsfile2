@@ -3,15 +3,18 @@ pipeline {
 
     stages {
         stage('Checkout') {
-            steps {
-                script {
-                    // Очищаем workspace перед новым билдом
-                    cleanWs()
-                    // Клонируем репозиторий
-                    git url: 'https://github.com/IgorP17/Ganesh', branch: 'main'
+                    steps {
+                        // Явно указываем ветку 'main'
+                        checkout([
+                            $class: 'GitSCM',
+                            branches: [[name: '*/main']],  // ← Исправлено на main
+                            extensions: [],
+                            userRemoteConfigs: [[
+                                url: 'https://github.com/IgorP17/Ganesh.git'
+                            ]]
+                        ])
+                    }
                 }
-            }
-        }
 
         stage('Check Apps Status') {
             steps {
