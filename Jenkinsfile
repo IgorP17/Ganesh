@@ -48,7 +48,7 @@ pipeline {
         stage('Run E2E Tests') {
             steps {
                 dir("${PROJECT_DIR}/app3") {
-                    sh 'mvn test -Dtest=EndToEndTest'
+                    sh 'mvn test -Dtest=**FlowTest'
                 }
             }
             post {
