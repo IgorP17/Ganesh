@@ -1,0 +1,107 @@
+Ошибка указывает, что система не может найти исполняемый файл Maven по указанному пути. Давайте полностью переустановим Maven и настроим пути правильно.
+Полное решение:
+1. Удалим текущие битые ссылки:
+bash
+Copy
+
+sudo rm -f /usr/local/bin/mvn
+sudo rm -f /usr/bin/mvn
+
+2. Переустановим Maven в правильное место:
+bash
+Copy
+
+# Удаляем старую версию (если нужно)
+sudo rm -rf /home/igor/apache-maven-3.6.3
+
+# Скачиваем свежую версию Maven 3.6.3
+wget https://archive.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+
+# Распаковываем в /opt
+sudo tar xzf apache-maven-3.6.3-bin.tar.gz -C /opt/
+sudo mv /opt/apache-maven-3.6.3 /opt/maven
+
+3. Настраиваем системные переменные:
+bash
+Copy
+
+# Создаем файл настроек
+sudo tee /etc/profile.d/maven.sh << 'EOF'
+export MAVEN_HOME=/opt/maven
+export PATH=$MAVEN_HOME/bin:$PATH
+EOF
+
+# Применяем настройки
+source /etc/profile.d/maven.sh
+
+4. Создаем симлинк:
+bash
+Copy
+
+sudo ln -s /opt/maven/bin/mvn /usr/local/bin/mvn
+
+5. Проверяем установку:
+bash
+Copy
+
+mvn -version
+
+Должно показать версию Maven.
+6. Настройка для Jenkins:
+bash
+Copy
+
+# Даем права Jenkins на Maven
+sudo chown -R root:root /opt/maven
+sudo chmod -R 755 /opt/maven
+
+# Проверяем от пользователя jenkins
+sudo -u jenkins mvn -version
+
+7. Обновляем Jenkinsfile:
+
+Теперь можно использовать просто:
+groovy
+Copy
+
+stage('Run E2E Tests') {
+    steps {
+        dir('app3') {
+            sh 'mvn test -Dtest=EndToEndTest'
+        }
+    }
+}
+
+Почему это работает:
+
+    Maven установлен в /opt/maven - системной директории
+
+    Правильные права 755 позволяют всем пользователям читать и выполнять
+
+    Симлинк в /usr/local/bin делает команду mvn доступной глобально
+
+    Переменные окружения настроены для всех пользователей
+
+Если проблема сохраняется:
+
+    Проверьте наличие файла:
+    bash
+    Copy
+
+    ls -l /opt/maven/bin/mvn
+
+    Проверьте переменные окружения:
+    bash
+    Copy
+
+    echo $PATH
+    which mvn
+
+    Проверьте SELinux:
+    bash
+    Copy
+
+    sudo sestatus
+    sudo setenforce 0  # временное отключение для теста
+
+Эта методика гарантированно работает, так как использует стандартные пути установки и правильные права доступа.

@@ -77,120 +77,23 @@ pipeline {
 }
 
 
-===================== используем В общем да
-Даём рекурсивные права на чтение, запись и выполнение:
-bash
-Copy
+=================
 
-sudo chmod -R 777 /home/igor/apache-maven-3.6.3/
+тут шаманство с maven_for_all
 
-ls -ld /home/igor/apache-maven-3.6.3/
+5. Настройка Jenkinsfile
 
-В Jenkinsfile измените команду на:
-groovy
-Copy
-
-sh '/home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
-
-
-=====================================================================
-В Jenkinsfile измените команду на:
-groovy
-Copy
-
-sh 'sudo -u igor /home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
-
-================ НЕТ
-Альтернативное решение (если перемещение не работает):
-1. Оставим Maven на месте, но дадим права:
-bash
-Copy
-
-sudo chmod -R o+rx /home/igor/apache-maven-3.6.3
-
-2. Создадим скрипт-обертку в /usr/local/bin:
-bash
-Copy
-
-sudo tee /usr/local/bin/mvn << 'EOF'
-#!/bin/sh
-export MAVEN_HOME=/home/igor/apache-maven-3.6.3
-exec "$MAVEN_HOME/bin/mvn" "$@"
-EOF
-
-sudo chmod +x /usr/local/bin/mvn
-
-3. Проверим:
-bash
-Copy
-
-sudo -u jenkins mvn -version
-
-=====================    БИЛ пропустить это
-1. Удалим неработающий симлинк:
-bash
-Copy
-
-sudo rm /usr/local/bin/mvn
-
-2. Правильно установим Maven для всех пользователей:
-bash
-Copy
-
-# Переместим Maven в /opt с сохранением путей
-sudo mv /home/igor/apache-maven-3.6.3 /opt/
-sudo chown -R root:root /opt/apache-maven-3.6.3
-
-# Создадим правильный запускающий скрипт
-sudo tee /usr/local/bin/mvn << 'EOF'
-#!/bin/sh
-export MAVEN_HOME=/opt/apache-maven-3.6.3
-exec "$MAVEN_HOME/bin/mvn" "$@"
-EOF
-
-# Дадим права на выполнение
-sudo chmod +x /usr/local/bin/mvn
-
-3. Настроим переменные окружения:
-bash
-Copy
-
-# Для всех пользователей
-sudo tee /etc/profile.d/maven.sh << 'EOF'
-export MAVEN_HOME=/opt/apache-maven-3.6.3
-export PATH=$MAVEN_HOME/bin:$PATH
-EOF
-
-# Применим настройки
-source /etc/profile.d/maven.sh
-
-4. Проверим от пользователя jenkins:
-bash
-Copy
-
-sudo -u jenkins bash -c 'mvn -version'
-
-5. Настройка Jenkins:
-
-В Jenkinsfile убедитесь, что используете простое обращение к mvn:
+Замените путь на системный:
 groovy
 Copy
 
 stage('Run E2E Tests') {
     steps {
         dir('app3') {
-            sh 'mvn test -Dtest=EndToEndTest'
+            sh 'mvn test -Dtest=EndToEndTest'  // Теперь будет использовать системный Maven
         }
     }
 }
 
-6. Дополнительные проверки:
-bash
-Copy
 
-# Проверим пути
-sudo -u jenkins bash -c 'which mvn && mvn -version'
-
-# Проверим доступ к .m2
-sudo mkdir -p /var/lib/jenkins/.m2
-sudo chown jenkins:jenkins /var/lib/jenkins/.m2
+sudo -u jenkins mvn -version
