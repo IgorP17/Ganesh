@@ -77,7 +77,23 @@ pipeline {
 }
 
 
-===================== используем
+===================== используем В общем да
+Даём рекурсивные права на чтение, запись и выполнение:
+bash
+Copy
+
+sudo chmod -R 777 /home/igor/apache-maven-3.6.3/
+
+ls -ld /home/igor/apache-maven-3.6.3/
+
+В Jenkinsfile измените команду на:
+groovy
+Copy
+
+sh '/home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
+
+
+=====================================================================
 В Jenkinsfile измените команду на:
 groovy
 Copy

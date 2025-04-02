@@ -48,7 +48,7 @@ pipeline {
         stage('Run E2E Tests') {
             steps {
                 dir("${PROJECT_DIR}/app3") {
-                    sh 'sudo -u igor /home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
+                    sh '/home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
                 }
             }
             post {
