@@ -77,7 +77,14 @@ pipeline {
 }
 
 
-================
+===================== используем
+В Jenkinsfile измените команду на:
+groovy
+Copy
+
+sh 'sudo -u igor /home/igor/apache-maven-3.6.3/bin/mvn test -Dtest=EndToEndTest'
+
+================ НЕТ
 Альтернативное решение (если перемещение не работает):
 1. Оставим Maven на месте, но дадим права:
 bash
