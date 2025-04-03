@@ -1,59 +1,62 @@
 pipeline {
     agent any
 
-    environment {
-        PROJECT_DIR = "${WORKSPACE}"
-        APP1_PORT = "8080"
-        APP2_PORT = "8081"
-        APP3_PORT = "8082"
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/IgorP17/Ganesh.git'
-                    ]]
-                ])
+                git branch: 'main',
+                    url: 'https://github.com/IgorP17/Ganesh.git'
             }
         }
 
-        stage('Check Running Apps') {
+        stage('Build Apps') {
+            steps {
+                dir('app1') { sh 'mvn package' }
+                dir('app2') { sh 'mvn package' }
+                dir('app3') { sh 'mvn package' }
+            }
+        }
+
+        stage('Start Apps') {
             steps {
                 script {
-                    def isApp1Running = sh(script: "netstat -tuln | grep ${APP1_PORT} || true", returnStatus: true) == 0
-                    def isApp2Running = sh(script: "netstat -tuln | grep ${APP2_PORT} || true", returnStatus: true) == 0
-                    def isApp3Running = sh(script: "netstat -tuln | grep ${APP3_PORT} || true", returnStatus: true) == 0
+                    // Запускаем приложения в фоне с логированием
+                    sh '''
+                        nohup java -jar app1/target/app1-0.0.1-SNAPSHOT.jar > app1.log 2>&1 &
+                        nohup java -jar app2/target/app2-0.0.1-SNAPSHOT.jar > app2.log 2>&1 &
+                        nohup java -jar app3/target/app3-0.0.1-SNAPSHOT.jar > app3.log 2>&1 &
+                    '''
 
-                    if (!isApp1Running) {
-                        sh "cd ${PROJECT_DIR}/app1 && mvn spring-boot:run &"
-                        sleep(time: 10, unit: 'SECONDS') // Ожидаем запуск
-                    }
-                    if (!isApp2Running) {
-                        sh "cd ${PROJECT_DIR}/app2 && mvn spring-boot:run &"
-                        sleep(time: 10, unit: 'SECONDS')
-                    }
-                    if (!isApp3Running) {
-                        sh "cd ${PROJECT_DIR}/app3 && mvn spring-boot:run &"
-                        sleep(time: 15, unit: 'SECONDS') // App3 может требовать больше времени
+                    // Ждем готовности app3 (порт 8082)
+                    timeout(time: 120, unit: 'SECONDS') {
+                        waitUntil {
+                            def status = sh(
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health',
+                                returnStdout: true
+                            ).trim()
+                            return status == "200"
+                        }
                     }
                 }
             }
         }
 
-        stage('Run E2E Tests') {
+        stage('Run Tests') {
             steps {
-                dir("${PROJECT_DIR}/app3") {
-                    sh 'mvn test -Dtest=**FlowTest'
+                dir('app3') {
+                    sh 'mvn test -Dtest=MessageFlowTest'
                 }
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
+        }
+
+        stage('Stop Apps') {
+            steps {
+                script {
+                    sh '''
+                        pkill -f "app1-0.0.1-SNAPSHOT.jar" || true
+                        pkill -f "app2-0.0.1-SNAPSHOT.jar" || true
+                        pkill -f "app3-0.0.1-SNAPSHOT.jar" || true
+                    '''
                 }
             }
         }
@@ -61,17 +64,8 @@ pipeline {
 
     post {
         always {
-            script {
-                // Останавливаем приложения
-                sh "pkill -f 'app1/target' || true"
-                sh "pkill -f 'app2/target' || true"
-                sh "pkill -f 'app3/target' || true"
-
-                // Очистка
-                sh "mvn clean -f ${PROJECT_DIR}/app1"
-                sh "mvn clean -f ${PROJECT_DIR}/app2"
-                sh "mvn clean -f ${PROJECT_DIR}/app3"
-            }
+            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
+            junit 'app3/target/surefire-reports/*.xml'
         }
     }
 }
