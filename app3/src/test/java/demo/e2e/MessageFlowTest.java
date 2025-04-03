@@ -93,4 +93,9 @@ public class MessageFlowTest {
                         "Processed At: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+$"
         ));
     }
+
+    @Test
+    public void testFake() {
+        Assert.assertEquals("FAKE", 1L, 1L);
+    }
 }
