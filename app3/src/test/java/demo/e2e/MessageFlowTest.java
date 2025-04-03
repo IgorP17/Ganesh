@@ -98,4 +98,9 @@ public class MessageFlowTest {
     public void testFake() {
         Assert.assertEquals("FAKE", 1L, 1L);
     }
+
+    @Test
+    public void testFake2() {
+        Assert.assertEquals("FAKE2", 2L, 2L);
+    }
 }
