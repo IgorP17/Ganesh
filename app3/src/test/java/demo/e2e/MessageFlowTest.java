@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,19 +68,24 @@ public class MessageFlowTest {
             Assert.fail("ID not found in text: " + response);
         }
 
+
         // 4. Проверяем в разделе app1
         $("#requestId").setValue(stringID);
         $("#searchRequestButton").click();
 //        $("#requestData").shouldHave(text(""));
 //        $("#requestData").shouldHave(partialText(""));
-        $("#requestData").should(matchText(
+        $("#requestData")
+                .shouldBe(visible, Duration.ofSeconds(30))
+                .should(matchText(
                 "Request ID: " + stringID + ".*Message:.*" + message + ".*SUCCESS"
         ));
 
         // 5. Проверяем в разделе app2
         $("#requestIdProcessed").setValue(stringID);
         $("#searchProcessedRequestButton").click();
-        $("#requestDataProcessed").should(matchText(
+        $("#requestDataProcessed")
+                .shouldBe(visible, Duration.ofSeconds(30))
+                .should(matchText(
                 "^ID: \\d+\n" +
                         "Request ID: " + stringID + "\n" +
                         "Data: \\{\"message\":\"" + Pattern.quote(message) + "\"\\}\n" +
