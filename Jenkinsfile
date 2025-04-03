@@ -20,20 +20,28 @@ pipeline {
         stage('Start Apps') {
             steps {
                 script {
-                    // Запускаем приложения в фоне с логированием
+                    // Останавливаем предыдущие экземпляры
+                    sh '''
+                        pkill -f "app1-1.0-SNAPSHOT.jar" || true
+                        pkill -f "app2-1.0-SNAPSHOT.jar" || true
+                        pkill -f "app3-1.0-SNAPSHOT.jar" || true
+                    '''
+
+                    // Запускаем приложения раздельно
                     sh '''
                         nohup java -jar app1/target/app1-1.0-SNAPSHOT.jar > app1.log 2>&1 &
                         nohup java -jar app2/target/app2-1.0-SNAPSHOT.jar > app2.log 2>&1 &
                         nohup java -jar app3/target/app3-1.0-SNAPSHOT.jar > app3.log 2>&1 &
                     '''
 
-                    // Ждем готовности app3 (порт 8082)
+                    // Увеличиваем таймаут и добавляем логирование
                     timeout(time: 120, unit: 'SECONDS') {
                         waitUntil {
                             def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health',
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo "000"',
                                 returnStdout: true
                             ).trim()
+                            echo "Health check status: ${status}"
                             return status == "200"
                         }
                     }
