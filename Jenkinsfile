@@ -11,9 +11,9 @@ pipeline {
 
         stage('Build Apps') {
             steps {
-                dir('app1') { sh 'mvn package' }
-                dir('app2') { sh 'mvn package' }
-                dir('app3') { sh 'mvn package' }
+                dir('app1') { sh 'mvn clean package -DskipTests' }
+                dir('app2') { sh 'mvn clean package -DskipTests' }
+                dir('app3') { sh 'mvn clean package -DskipTests' }
             }
         }
 
