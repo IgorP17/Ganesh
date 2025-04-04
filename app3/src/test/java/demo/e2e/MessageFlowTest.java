@@ -78,11 +78,16 @@ public class MessageFlowTest {
 //        $("#requestData").shouldHave(partialText(""));
 
         // ждем сукеса
+        // 3. Ожидание с Awaitility + Selenide
         await().atMost(2, MINUTES)
                 .pollInterval(15, SECONDS)
-                .until(() -> {
-                    $("#searchRequestButton").click(); // Повторный запрос статуса
-                    return $("#requestData").getText().contains("Status: SUCCESS");
+                .untilAsserted(() -> {
+                    // Обновляем данные
+                    $("#searchRequestButton").click();
+
+                    // Проверяем статус
+                    String currentText = $("#requestData").getText();
+                    Assert.assertTrue(currentText.contains("Status: SUCCESS"));
                 });
 
         $("#requestData")
