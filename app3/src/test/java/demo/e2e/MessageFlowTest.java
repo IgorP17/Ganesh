@@ -15,6 +15,8 @@ import java.util.regex.Pattern;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.TimeUnit.*;
+import static org.awaitility.Awaitility.await;
 
 public class MessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(MessageFlowTest.class);
@@ -74,6 +76,15 @@ public class MessageFlowTest {
         $("#searchRequestButton").click();
 //        $("#requestData").shouldHave(text(""));
 //        $("#requestData").shouldHave(partialText(""));
+
+        // ждем сукеса
+        await().atMost(2, MINUTES)
+                .pollInterval(15, SECONDS)
+                .until(() -> {
+                    $("#searchRequestButton").click(); // Повторный запрос статуса
+                    return $("#requestData").getText().contains("Status: SUCCESS");
+                });
+
         $("#requestData")
                 .shouldBe(visible, Duration.ofSeconds(30))
                 .should(matchText(

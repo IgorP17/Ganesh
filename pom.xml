@@ -31,6 +31,7 @@
         <junit.version>4.13.2</junit.version> <!-- Укажите версию JUnit 4 -->
         <selenide.version>7.2.1</selenide.version>
         <selenium.version>4.16.1</selenium.version>
+        <awaitility.version>4.2.0</awaitility.version>
     </properties>
 
 
@@ -112,7 +113,13 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
-
+        <!-- ожидания -->
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
