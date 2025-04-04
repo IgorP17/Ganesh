@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -124,5 +125,16 @@ public class MessageFlowTest {
     @Test
     public void testFake2() {
         Assert.assertEquals("FAKE2", 2L, 2L);
+    }
+
+    @Test
+    public void testFakeRandomFailure() {
+        Random random = new Random(System.currentTimeMillis());
+        int chance = random.nextInt(100);
+        logger.info("testFakeRandomFailure - Random chance: " + chance + "/100");
+
+        if (chance < 30) {
+            Assert.fail("Имитация случайного падения теста (вероятность 30%)");
+        }
     }
 }
