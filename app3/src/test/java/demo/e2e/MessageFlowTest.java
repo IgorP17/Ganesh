@@ -37,7 +37,7 @@ public class MessageFlowTest {
     @After
     public void tearDown() {
         // Закрываем браузер после теста
-        WebDriverRunner.closeWebDriver();
+        closeWebDriver();
     }
 
     @Test
@@ -82,21 +82,18 @@ public class MessageFlowTest {
 
         // 4. Проверяем в разделе app1
         $("#requestId").setValue(stringID);
-        $("#searchRequestButton").click();
+//        $("#searchRequestButton").click();
 //        $("#requestData").shouldHave(text(""));
 //        $("#requestData").shouldHave(partialText(""));
 
         // ждем сукеса
-        // 3. Ожидание с Awaitility + Selenide
-        await().atMost(2, MINUTES)
-                .pollInterval(15, SECONDS)
+        // 3. Ожидаем SUCCESS статус с Awaitility
+        await().atMost(30, SECONDS)
+                .pollInterval(5, SECONDS)
+                .pollInSameThread() // Ключевая настройка!
                 .untilAsserted(() -> {
-                    // Обновляем данные
                     $("#searchRequestButton").click();
-
-                    // Проверяем статус
-                    String currentText = $("#requestData").getText();
-                    Assert.assertTrue(currentText.contains("Status: SUCCESS"));
+                    $("#requestData").shouldHave(text("SUCCESS"));
                 });
 
         $("#requestData")
