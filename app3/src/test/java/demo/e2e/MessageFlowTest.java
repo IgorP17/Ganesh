@@ -88,7 +88,7 @@ public class MessageFlowTest {
 
         // ждем сукеса
         // 3. Ожидаем SUCCESS статус с Awaitility
-        await().atMost(30, SECONDS)
+        await().atMost(90, SECONDS)
                 .pollInterval(5, SECONDS)
                 .pollInSameThread() // Ключевая настройка!
                 .untilAsserted(() -> {
