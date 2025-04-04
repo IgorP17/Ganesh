@@ -38,7 +38,7 @@ pipeline {
                     timeout(time: 120, unit: 'SECONDS') {
                         waitUntil {
                             def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo "app3 not ready"',
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo " app3 not ready"',
                                 returnStdout: true
                             ).trim()
                             echo "Health check status: ${status}"
@@ -50,7 +50,18 @@ pipeline {
                     timeout(time: 120, unit: 'SECONDS') {
                         waitUntil {
                             def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health || echo "app2 not ready"',
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health || echo " app2 not ready"',
+                                returnStdout: true
+                            ).trim()
+                            echo "Health check status: ${status}"
+                            return status == "200"
+                        }
+                    }
+                    // Увеличиваем таймаут и добавляем логирование для app1
+                    timeout(time: 120, unit: 'SECONDS') {
+                        waitUntil {
+                            def status = sh(
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health || echo " app1 not ready"',
                                 returnStdout: true
                             ).trim()
                             echo "Health check status: ${status}"
