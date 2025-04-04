@@ -1,6 +1,8 @@
 package demo.e2e;
 
 import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.WebDriverRunner;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,11 +30,18 @@ public class MessageFlowTest {
         Configuration.timeout = 10000;
         Configuration.headless = true; // Для запуска без GUI (опционально)
 //        Configuration.headless = false; // Для запуска c GUI (опционально)
+        // Открываем страницу перед каждым тестом
+        open("http://localhost:8082");
+    }
+
+    @After
+    public void tearDown() {
+        // Закрываем браузер после теста
+        WebDriverRunner.closeWebDriver();
     }
 
     @Test
     public void testMessageFlow() {
-        open("/");
         $("#messageInput").shouldBe(visible);
 
         // 2. Отправляем сообщение
@@ -93,8 +102,8 @@ public class MessageFlowTest {
         $("#requestData")
                 .shouldBe(visible, Duration.ofSeconds(30))
                 .should(matchText(
-                "Request ID: " + stringID + ".*Message:.*" + message + ".*SUCCESS"
-        ));
+                        "Request ID: " + stringID + ".*Message:.*" + message + ".*SUCCESS"
+                ));
 
         // 5. Проверяем в разделе app2
         $("#requestIdProcessed").setValue(stringID);
@@ -102,12 +111,12 @@ public class MessageFlowTest {
         $("#requestDataProcessed")
                 .shouldBe(visible, Duration.ofSeconds(30))
                 .should(matchText(
-                "^ID: \\d+\n" +
-                        "Request ID: " + stringID + "\n" +
-                        "Data: \\{\"message\":\"" + Pattern.quote(message) + "\"\\}\n" +
-                        "Status: SUCCESS\n" +
-                        "Processed At: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+$"
-        ));
+                        "^ID: \\d+\n" +
+                                "Request ID: " + stringID + "\n" +
+                                "Data: \\{\"message\":\"" + Pattern.quote(message) + "\"\\}\n" +
+                                "Status: SUCCESS\n" +
+                                "Processed At: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+$"
+                ));
     }
 
     @Test
