@@ -34,11 +34,23 @@ pipeline {
                         nohup java -jar app3/target/app3-1.0-SNAPSHOT.jar > app3.log 2>&1 &
                     '''
 
-                    // Увеличиваем таймаут и добавляем логирование
+                    // Увеличиваем таймаут и добавляем логирование для app3
                     timeout(time: 120, unit: 'SECONDS') {
                         waitUntil {
                             def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo "000"',
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo "app3 not ready"',
+                                returnStdout: true
+                            ).trim()
+                            echo "Health check status: ${status}"
+                            return status == "200"
+                        }
+                    }
+
+                    // Увеличиваем таймаут и добавляем логирование для app2
+                    timeout(time: 120, unit: 'SECONDS') {
+                        waitUntil {
+                            def status = sh(
+                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health || echo "app2 not ready"',
                                 returnStdout: true
                             ).trim()
                             echo "Health check status: ${status}"
