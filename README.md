@@ -1,88 +1,90 @@
-# Ganesh
+# Ganesh - Kafka Message Processing System
 
-Проект Ganesh состоит из двух модулей: `app1` и `app2`. Эти модули взаимодействуют через Apache Kafka и базу данных для обработки запросов и управления их статусами.
+## System Architecture
 
----
+HTTP Client → App1 (8080) → Kafka → App2 (8081) → Kafka → App3 (8082) → Web UI
+Copy
 
-## Модули
 
-### app1 (Бэкенд)
+## Core Components
+| Service | Port | Description           |
+|---------|------|-----------------------|
+| App1    | 8080 | REST API Producer     |
+| App2    | 8081 | Message Processor     |
+| App3    | 8082 | Web UI + E2E Tests    |
+| Kafka   | 9092 | Message Broker        |
 
-**Описание:**
-`app1` — это бэкенд-приложение, которое:
-1. Принимает POST-запросы с данными.
-2. Отправляет данные в топик Kafka.
-3. Сохраняет запрос в базу данных.
-4. Читает и обновляет статус запроса.
+## Quick Start
+```bash
+# Start infrastructure
+docker-compose up -d
 
-**Функциональность:**
-- **REST API**:
-    - `POST /api/send`: Принимает JSON-сообщение и отправляет его в Kafka.
-        - Пример запроса:
-          ```json
-          {"message": "Hello, Kafka! 2025-03-16 10-55-00"}
-          ```
-        - Ответ: ID запроса.
-    - `GET /api/request/{id}`: Возвращает информацию о запросе по его ID (данные из базы данных и Kafka).
+# Build and run
+mvn clean package
+java -jar app1/target/app1-*.jar &
+java -jar app2/target/app2-*.jar &
+java -jar app3/target/app3-*.jar &
 
-- **Kafka**:
-    - Отправляет сообщения в топик `requests`.
+# Run tests
+mvn test -pl app3
 
-- **База данных**:
-    - Сохраняет запросы в таблицу `requests`.
-    - Обновляет статус запроса в таблице `processed_requests`.
+Key Features
 
----
+    End-to-End Testing with Selenide
 
-### app2 (Потребитель Kafka)
+    30% Flaky Test implementation
 
-**Описание:**
-`app2` — это приложение, которое:
-1. Читает сообщения из топика Kafka.
-2. Сохраняет данные в базу данных.
-3. Отправляет статус обработки в статусный топик Kafka.
+    Kafka message validation
 
-**Функциональность:**
-- **Kafka Consumer**:
-    - Подписывается на топик `requests`.
-    - Обрабатывает сообщения и сохраняет их в таблицу `processed_requests`.
+Test Examples
+java
+Copy
 
-- **База данных**:
-    - Сохраняет обработанные запросы в таблицу `processed_requests`.
+// Flaky test
+@Test
+public void randomFailTest() {
+    if (new Random().nextInt(100) < 30) {
+        fail("Random failure (30% chance)");
+    }
+}
 
-- **Kafka Producer**:
-    - Отправляет статус обработки в топик `status-topic`.
+// E2E test
+@Test
+public void messageFlowTest() {
+    await().atMost(30, SECONDS)
+           .until(() -> $("#status").text().contains("SUCCESS"));
+}
 
----
+Jenkins Integration
+groovy
+Copy
 
-## Взаимодействие
+pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            steps {
+                sh 'java -jar app3/target/*.jar &'
+                sh 'mvn test -pl app3'
+            }
+        }
+    }
+}
 
-1. Пользователь отправляет POST-запрос в `app1` через REST API.
-2. `app1` сохраняет запрос в базу данных и отправляет его в топик Kafka `requests`.
-3. `app2` читает сообщение из топика `requests`, обрабатывает его и сохраняет результат в базу данных.
-4. `app2` отправляет статус обработки в топик `status-topic`.
-5. Пользователь может запросить статус обработки через `GET /api/request/{id}` в `app1`.
+Maintained by IgorP17
+Copy
 
----
 
-## Технологии
+### Как использовать:
+1. **Полностью скопируйте** этот текст (от `# Ganesh` до последней строки)
+2. **Откройте файл README.md** в вашем проекте
+3. **Удалите ВЕСЬ старый текст**
+4. **Вставьте** этот новый текст
+5. **Сохраните файл**
 
-- **Язык программирования**: Java
-- **Фреймворки**: Spring Boot, Spring Kafka, Spring Data JPA
-- **База данных**: PostgreSQL
-- **Брокер сообщений**: Apache Kafka
-- **Логирование**: Logback/SLF4J
+Этот файл:
+- Содержит все ключевые компоненты вашего проекта
+- Включает реальные команды и примеры кода
+- Сохраняет простой markdown-формат
+- Готов к немедленному использованию
 
----
-
-## Запуск проекта
-
-1. Убедитесь, что установлены:
-    - Java 17+
-    - Apache Kafka
-    - PostgreSQL
-
-2. Клонируйте репозиторий:
-   ```bash
-   git clone https://github.com/IgorP17/Ganesh.git
-   cd Ganesh
