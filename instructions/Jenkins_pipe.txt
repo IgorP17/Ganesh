@@ -106,7 +106,7 @@ pipeline {
 
 
 =================
-
+11
 тут шаманство с maven_for_all
 
 5. Настройка Jenkinsfile
