@@ -104,3 +104,13 @@ sudo nano /usr/lib/systemd/system/jenkins.service
 sudo systemctl daemon-reload
 
 sudo systemctl start jenkins
+
+
+===============
+
+igor@igor-VirtualBox:/var/lib/jenkins/workspace$ ls
+Jenkins1  Jenkins1@tmp
+
+============================================
+---- удалим билды ?
+igor@igor-VirtualBox:/var/lib/jenkins/jobs/Jenkins1/builds$ sudo rm -r *
