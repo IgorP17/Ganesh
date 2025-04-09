@@ -40,7 +40,7 @@ pipeline {
                         pkill -f "app1-1.0-SNAPSHOT.jar" || true
                         pkill -f "app2-1.0-SNAPSHOT.jar" || true
                         pkill -f "app3-1.0-SNAPSHOT.jar" || true
-                        sleep 2  // Пауза для завершения процессов
+                        sleep 2  # Пауза для завершения процессов
                     '''
 
                     // Запуск с новыми логами (удаляем старые перед записью)
