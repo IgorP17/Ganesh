@@ -2,6 +2,21 @@ pipeline {
     agent any
 
     stages {
+        stage('Clean Workspace') {
+            steps {
+                // Полная очистка рабочей директории
+                cleanWs()
+
+                // Дополнительная очистка старых логов (если остались вне workspace)
+                sh '''
+                    rm -f *.log || true
+                    rm -f app1/target/*.log || true
+                    rm -f app2/target/*.log || true
+                    rm -f app3/target/*.log || true
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -20,52 +35,33 @@ pipeline {
         stage('Start Apps') {
             steps {
                 script {
-                    // Останавливаем предыдущие экземпляры
+                    // Гарантированная остановка предыдущих экземпляров
                     sh '''
                         pkill -f "app1-1.0-SNAPSHOT.jar" || true
                         pkill -f "app2-1.0-SNAPSHOT.jar" || true
                         pkill -f "app3-1.0-SNAPSHOT.jar" || true
+                        sleep 2  // Пауза для завершения процессов
                     '''
 
-                    // Запускаем приложения раздельно
+                    // Запуск с новыми логами (удаляем старые перед записью)
                     sh '''
+                        rm -f app1.log app2.log app3.log || true
                         nohup java -jar app1/target/app1-1.0-SNAPSHOT.jar > app1.log 2>&1 &
                         nohup java -jar app2/target/app2-1.0-SNAPSHOT.jar > app2.log 2>&1 &
                         nohup java -jar app3/target/app3-1.0-SNAPSHOT.jar > app3.log 2>&1 &
                     '''
 
-                    // Увеличиваем таймаут и добавляем логирование для app3
-                    timeout(time: 120, unit: 'SECONDS') {
-                        waitUntil {
-                            def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/health || echo " app3 not ready"',
-                                returnStdout: true
-                            ).trim()
-                            echo "Health check status: ${status}"
-                            return status == "200"
-                        }
-                    }
-
-                    // Увеличиваем таймаут и добавляем логирование для app2
-                    timeout(time: 120, unit: 'SECONDS') {
-                        waitUntil {
-                            def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/health || echo " app2 not ready"',
-                                returnStdout: true
-                            ).trim()
-                            echo "Health check status: ${status}"
-                            return status == "200"
-                        }
-                    }
-                    // Увеличиваем таймаут и добавляем логирование для app1
-                    timeout(time: 120, unit: 'SECONDS') {
-                        waitUntil {
-                            def status = sh(
-                                script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/health || echo " app1 not ready"',
-                                returnStdout: true
-                            ).trim()
-                            echo "Health check status: ${status}"
-                            return status == "200"
+                    // Проверка здоровья с таймаутами
+                    ['8080': 'app1', '8081': 'app2', '8082': 'app3'].each { port, app ->
+                        timeout(time: 120, unit: 'SECONDS') {
+                            waitUntil {
+                                def status = sh(
+                                    script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:${port}/health || echo '${app} not ready'",
+                                    returnStdout: true
+                                ).trim()
+                                echo "${app} health check: ${status}"
+                                return status == "200"
+                            }
                         }
                     }
                 }
@@ -95,8 +91,14 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: '**/*.log', allowEmptyArchive: true
+            // Архивируем только свежие логи
+            archiveArtifacts artifacts: '*.log', allowEmptyArchive: true
             junit 'app3/target/surefire-reports/*.xml'
+
+            // Дополнительная очистка после выполнения
+            sh '''
+                rm -f nohup.out || true
+            '''
         }
     }
 }
