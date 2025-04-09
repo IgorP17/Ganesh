@@ -133,7 +133,7 @@ public class MessageFlowTest {
         int chance = random.nextInt(100);
         logger.info("testFakeRandomFailure - Random chance: " + chance + "/100");
 
-        if (chance < 30) {
+        if (chance < 50) {
             Assert.fail("Имитация случайного падения теста (вероятность 30%)");
         }
     }

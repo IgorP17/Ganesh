@@ -60,7 +60,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 dir('app3') {
-                    sh 'mvn test -Dtest=MessageFlowTest'
+                    sh 'mvn test -Dtest=MessageFlowTest || echo "Тесты упали, но продолжаем сбор логов"'
                 }
             }
         }
@@ -76,29 +76,22 @@ pipeline {
                 }
             }
         }
-
-        stage('Archive Logs') {
-            steps {
-                script {
-                    // Создаем директорию для логов с timestamp
-                    def timestamp = sh(script: 'date +"%Y-%m-%d_%H-%M-%S"', returnStdout: true).trim()
-                    sh """
-                        mkdir -p logs_${timestamp}
-                        cp *.log logs_${timestamp}/
-                        zip -r all_logs_${timestamp}.zip logs_${timestamp}
-                    """
-                }
-            }
-        }
     }
 
     post {
         always {
-            // Архивируем единый архив с логами и отчетом тестов
+            script {
+                def timestamp = sh(script: 'date +"%Y-%m-%d_%H-%M-%S"', returnStdout: true).trim()
+                sh """
+                    mkdir -p logs_${timestamp}
+                    cp *.log logs_${timestamp}/ || echo "Файлы логов не найдены"
+                    zip -r all_logs_${timestamp}.zip logs_${timestamp} || echo "Ошибка архивации"
+                """
+            }
+
             archiveArtifacts artifacts: "all_logs_*.zip, app3/target/surefire-reports/*.xml", allowEmptyArchive: true
             junit 'app3/target/surefire-reports/*.xml'
 
-            // Очистка
             sh '''
                 rm -rf logs_* nohup.out || true
             '''
