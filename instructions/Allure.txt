@@ -1,0 +1,268 @@
+Вот модифицированный тестовый класс с Allure-аннотациями и инструкция по настройке Jenkins для отображения Allure-отчетов:
+1. Обновленный тест с Allure-аннотациями (MessageFlowTest.java)
+java
+Copy
+
+package demo.e2e;
+
+import com.codeborne.selenide.Configuration;
+import com.codeborne.selenide.WebDriverRunner;
+import io.qameta.allure.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selenide.*;
+import static io.qameta.allure.Allure.step;
+import static java.time.Duration.ofSeconds;
+import static java.util.concurrent.TimeUnit.*;
+import static org.awaitility.Awaitility.await;
+
+@Epic("E2E Тестирование потока сообщений")
+@Feature("Основной поток обработки сообщений")
+public class MessageFlowTest {
+    private static final Logger logger = LoggerFactory.getLogger(MessageFlowTest.class);
+
+    @Before
+    @Step("Настройка окружения")
+    public void setUp() {
+        Configuration.browser = "firefox";
+        Configuration.baseUrl = "http://localhost:8082";
+        Configuration.timeout = 10000;
+        Configuration.headless = true;
+        open("http://localhost:8082");
+    }
+
+    @After
+    @Step("Очистка после теста")
+    public void tearDown() {
+        closeWebDriver();
+    }
+
+    @Test
+    @Story("Пользователь отправляет сообщение через систему")
+    @Description("Проверка полного цикла обработки сообщения через все микросервисы")
+    @Severity(SeverityLevel.CRITICAL)
+    public void testMessageFlow() {
+        step("Проверка видимости поля ввода", () -> {
+            $("#messageInput").shouldBe(visible);
+        });
+
+        LocalDateTime dt = LocalDateTime.now();
+        String message = "Hello, autoQA! " + dt;
+        String testMessage = "{\n    \"message\":\"" + message + "\"\n}";
+
+        step("Отправка тестового сообщения: " + message, () -> {
+            $("#messageInput").setValue(testMessage);
+            $("#btnSend").click();
+        });
+
+        String response = step("Получение ID сообщения", () -> {
+            $("#response")
+                .shouldBe(visible, ofSeconds(10))
+                .shouldHave(matchText("Request saved with ID: \\d+"));
+            return $("#response").text();
+        });
+
+        String stringID = step("Извлечение ID из ответа", () -> {
+            Pattern pattern = Pattern.compile("Request saved with ID: (\\d+)");
+            Matcher matcher = pattern.matcher(response);
+            if (matcher.find()) {
+                return matcher.group(1);
+            }
+            Assert.fail("ID not found in text: " + response);
+            return "";
+        });
+
+        step("Проверка статуса в app1", () -> {
+            $("#requestId").setValue(stringID);
+            await().atMost(90, SECONDS)
+                .pollInterval(5, SECONDS)
+                .pollInSameThread()
+                .untilAsserted(() -> {
+                    $("#searchRequestButton").click();
+                    $("#requestData").shouldHave(text("SUCCESS"));
+                });
+        });
+
+        step("Проверка данных в app2", () -> {
+            $("#requestIdProcessed").setValue(stringID);
+            $("#searchProcessedRequestButton").click();
+            $("#requestDataProcessed")
+                .shouldBe(visible, Duration.ofSeconds(30))
+                .should(matchText(
+                    "^ID: \\d+\n" +
+                    "Request ID: " + stringID + "\n" +
+                    "Data: \\{\"message\":\"" + Pattern.quote(message) + "\"\\}\n" +
+                    "Status: SUCCESS\n" +
+                    "Processed At: \\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d+$"
+                ));
+        });
+    }
+
+    @Test
+    @Story("Тестовые сценарии")
+    @Description("Всегда успешный тест для проверки инфраструктуры")
+    @Severity(SeverityLevel.MINOR)
+    public void testFake() {
+        step("Проверка тривиального утверждения", () -> {
+            Assert.assertEquals(1L, 1L);
+        });
+    }
+
+    @Test
+    @Story("Тестовые сценарии")
+    @Description("Тест с возможностью случайного падения")
+    @Severity(SeverityLevel.NORMAL)
+    public void testFakeRandomFailure() {
+        Random random = new Random(System.currentTimeMillis());
+        int chance = random.nextInt(100);
+
+        step("Генерация случайного числа: " + chance, () -> {
+            if (chance < 50) {
+                Assert.fail("Имитация случайного падения теста (вероятность 50%)");
+            }
+        });
+    }
+}
+
+2. Настройка Jenkins для Allure
+2.1. Обновите pom.xml в app3:
+xml
+Copy
+
+<properties>
+    <aspectj.version>1.9.19</aspectj.version>
+    <allure.version>2.24.0</allure.version>
+</properties>
+
+<dependencies>
+    <!-- Allure -->
+    <dependency>
+        <groupId>io.qameta.allure</groupId>
+        <artifactId>allure-junit4</artifactId>
+        <version>${allure.version}</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.1.2</version>
+            <configuration>
+                <argLine>
+                    -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
+                </argLine>
+                <properties>
+                    <property>
+                        <name>listener</name>
+                        <value>io.qameta.allure.junit4.AllureJunit4</value>
+                    </property>
+                </properties>
+            </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjweaver</artifactId>
+                    <version>${aspectj.version}</version>
+                </dependency>
+            </dependencies>
+        </plugin>
+    </plugins>
+</build>
+
+Run HTML
+2.2. Обновите Jenkinsfile:
+groovy
+Copy
+
+stage('Run Tests') {
+    steps {
+        dir('app3') {
+            sh '''
+                mvn clean test -Dtest=MessageFlowTest || echo "Тесты упали, но продолжаем сбор отчетов"
+            '''
+        }
+    }
+    post {
+        always {
+            // Сохраняем Allure-отчет
+            allure([
+                includeProperties: false,
+                jdk: '',
+                properties: [],
+                reportBuildPolicy: 'ALWAYS',
+                results: [[path: 'app3/target/allure-results']]
+            ])
+        }
+    }
+}
+
+3. Настройка Jenkins
+
+    Установите плагин Allure Jenkins Plugin:
+
+        Manage Jenkins → Manage Plugins → Available → "Allure"
+
+    Добавьте Tools Configuration:
+
+        Manage Jenkins → Global Tool Configuration
+
+        Добавьте Allure Commandline (укажите версию, например 2.24.0)
+
+    После настройки в каждом билде появится:
+
+        Иконка Allure в боковом меню
+
+        Красивые графики и шаги тестов
+
+        Скриншоты (если настроите Selenide)
+
+4. Дополнительные улучшения
+
+Для скриншотов в Allure добавьте в pom.xml:
+xml
+Copy
+
+<dependency>
+    <groupId>io.qameta.allure</groupId>
+    <artifactId>allure-selenide</artifactId>
+    <version>${allure.version}</version>
+</dependency>
+
+Run HTML
+
+И в setUp()-метод:
+java
+Copy
+
+@Before
+public void setUp() {
+    Configuration.browser = "firefox";
+    AllureSelenide allureSelenide = new AllureSelenide()
+        .screenshots(true)
+        .savePageSource(false);
+    SelenideLogger.addListener("AllureSelenide", allureSelenide);
+}
+
+Теперь в отчетах Allure будут:
+
+    Детальные шаги тестов
+
+    Скриншоты на каждом шаге
+
+    Графики истории выполнения
+
+    Информация о severity и feature
