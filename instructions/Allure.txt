@@ -220,7 +220,7 @@ stage('Run Tests') {
 
         Manage Jenkins → Global Tool Configuration
 
-        Добавьте Allure Commandline (укажите версию, например 2.24.0)
+        Добавьте Allure Commandline (укажите версию, например 2.24.0) -- 2.32
 
     После настройки в каждом билде появится:
 

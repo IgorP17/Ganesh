@@ -60,7 +60,21 @@ pipeline {
         stage('Run Tests') {
             steps {
                 dir('app3') {
-                    sh 'mvn test -Dtest=MessageFlowTest || echo "Тесты упали, но продолжаем сбор логов"'
+                    sh '''
+                        mvn clean test -Dtest=MessageFlowTest || echo "Тесты упали, но продолжаем сбор отчетов"
+                    '''
+                }
+            }
+            post {
+                always {
+                    // Сохраняем Allure-отчет
+                    allure([
+                        includeProperties: false,
+                        jdk: '',
+                        properties: [],
+                        reportBuildPolicy: 'ALWAYS',
+                        results: [[path: 'app3/target/allure-results']]
+                    ])
                 }
             }
         }
