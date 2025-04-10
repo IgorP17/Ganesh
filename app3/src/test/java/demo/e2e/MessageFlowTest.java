@@ -124,8 +124,8 @@ public class MessageFlowTest {
         int chance = random.nextInt(100);
 
         step("Генерация случайного числа: " + chance, () -> {
-            if (chance < 50) {
-                Assert.fail("Имитация случайного падения теста (вероятность 50%)");
+            if (chance < 30) {
+                Assert.fail("Имитация случайного падения теста (вероятность 30%)");
             }
         });
     }
