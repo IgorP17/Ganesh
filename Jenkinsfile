@@ -8,6 +8,7 @@ pipeline {
                 sh '''
                     rm -f *.log || true
                     rm -f all_logs.zip || true
+                    rm -rf allure-results || true
                 '''
             }
         }
@@ -23,7 +24,12 @@ pipeline {
             steps {
                 dir('app1') { sh 'mvn clean package -DskipTests' }
                 dir('app2') { sh 'mvn clean package -DskipTests' }
-                dir('app3') { sh 'mvn clean package -DskipTests' }
+                dir('app3') {
+                    sh '''
+                        mvn clean package -DskipTests
+                        mkdir -p allure-results
+                    '''
+                }
             }
         }
 
@@ -34,7 +40,7 @@ pipeline {
                         pkill -f "app1-1.0-SNAPSHOT.jar" || true
                         pkill -f "app2-1.0-SNAPSHOT.jar" || true
                         pkill -f "app3-1.0-SNAPSHOT.jar" || true
-                        sleep 5 # Пауза для завершения процессов
+                        sleep 5
                     '''
                     sh '''
                         nohup java -jar app1/target/app1-1.0-SNAPSHOT.jar > app1.log 2>&1 &
@@ -61,20 +67,9 @@ pipeline {
             steps {
                 dir('app3') {
                     sh '''
-                        mvn clean test -Dtest=MessageFlowTest || echo "Тесты упали, но продолжаем сбор отчетов"
+                        mvn test -Dtest=MessageFlowTest -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
+                        ls -la allure-results/ # Проверка наличия файлов
                     '''
-                }
-            }
-            post {
-                always {
-                    // Сохраняем Allure-отчет
-                    allure([
-                        includeProperties: false,
-                        jdk: '',
-                        properties: [],
-                        reportBuildPolicy: 'ALWAYS',
-                        results: [[path: 'app3/target/allure-results']]
-                    ])
                 }
             }
         }
@@ -95,17 +90,30 @@ pipeline {
     post {
         always {
             script {
+                // Архивируем логи приложений
                 def timestamp = sh(script: 'date +"%Y-%m-%d_%H-%M-%S"', returnStdout: true).trim()
                 sh """
                     mkdir -p logs_${timestamp}
                     cp *.log logs_${timestamp}/ || echo "Файлы логов не найдены"
                     zip -r all_logs_${timestamp}.zip logs_${timestamp} || echo "Ошибка архивации"
                 """
+
+                // Генерируем и сохраняем Allure отчет
+                allure([
+                    includeProperties: false,
+                    jdk: '',
+                    properties: [],
+                    reportBuildPolicy: 'ALWAYS',
+                    results: [[path: 'app3/allure-results']],  // Измененный путь
+                    report: 'allure-report'
+                ])
             }
 
-            archiveArtifacts artifacts: "all_logs_*.zip, app3/target/surefire-reports/*.xml", allowEmptyArchive: true
+            // Архивируем все артефакты
+            archiveArtifacts artifacts: 'all_logs_*.zip, app3/target/surefire-reports/*.xml, allure-report/**', allowEmptyArchive: true
             junit 'app3/target/surefire-reports/*.xml'
 
+            // Очистка
             sh '''
                 rm -rf logs_* nohup.out || true
             '''
