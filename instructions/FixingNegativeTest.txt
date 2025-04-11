@@ -1,0 +1,198 @@
+1. Добавьте DTO с валидацией (MessageRequest.java):
+java
+Copy
+
+package demo.dto;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+public class MessageRequest {
+
+    @NotBlank(message = "Сообщение не может быть пустым")
+    @Size(max = 1000, message = "Сообщение не может быть длиннее 1000 символов")
+    private String message;
+
+    // Геттеры и сеттеры
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+}
+
+2. Модифицируйте контроллер (MessageController.java):
+java
+Copy
+
+package demo.controller;
+
+import demo.dto.MessageRequest;
+import demo.service.MessageService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+
+@RestController
+@RequestMapping("/api/messages")
+@Validated
+public class MessageController {
+
+    private final MessageService messageService;
+
+    public MessageController(MessageService messageService) {
+        this.messageService = messageService;
+    }
+
+    @PostMapping
+    public ResponseEntity<?> processMessage(@Valid @RequestBody MessageRequest request) {
+        try {
+            String result = messageService.processMessage(request.getMessage());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getMessageStatus(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(messageService.getMessageStatus(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}
+
+3. Обновите сервис (MessageService.java):
+java
+Copy
+
+package demo.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+public class MessageService {
+
+    public String processMessage(String message) {
+        // Дополнительная бизнес-логика валидации
+        if (!StringUtils.hasText(message)) {
+            throw new IllegalArgumentException("Сообщение не может быть пустым");
+        }
+
+        if (message.length() > 1000) {
+            throw new IllegalArgumentException("Сообщение слишком длинное");
+        }
+
+        // Обработка сообщения
+        return "Сообщение принято: " + message;
+    }
+
+    public String getMessageStatus(Long id) {
+        // Логика поиска сообщения
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Неверный ID сообщения");
+        }
+
+        return "Статус сообщения: PROCESSED";
+    }
+}
+
+4. Добавьте обработчик ошибок (GlobalExceptionHandler.java):
+java
+Copy
+
+package demo.handler;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String errorMessage = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(error -> error.getDefaultMessage())
+            .findFirst()
+            .orElse("Неизвестная ошибка валидации");
+
+        return ResponseEntity.badRequest().body(errorMessage);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleBusinessExceptions(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+}
+
+5. Обновите зависимости в pom.xml:
+xml
+Copy
+
+<!-- Валидация -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-validation</artifactId>
+</dependency>
+
+Run HTML
+6. Обновите фронтенд (app3/src/main/resources/static/js/app.js):
+javascript
+Copy
+
+function sendMessage() {
+    const message = document.getElementById('messageInput').value;
+
+    fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: message })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => { throw new Error(text) });
+        }
+        return response.text();
+    })
+    .then(data => {
+        document.getElementById('response').textContent = data;
+    })
+    .catch(error => {
+        document.getElementById('response').textContent = error.message;
+    });
+}
+
+Что это дает:
+
+    Валидация на уровне DTO:
+
+        @NotBlank - проверка на пустоту
+
+        @Size - ограничение длины
+
+    Единая обработка ошибок:
+
+        Spring автоматически возвращает 400 Bad Request при ошибках валидации
+
+        Четкие сообщения об ошибках
+
+    Безопасность:
+
+        Защита от пустых/некорректных сообщений
+
+        Проверка ID на сервере
+
+    Согласованность с фронтендом:
+
+        Обработка ошибок в интерфейсе
