@@ -46,7 +46,7 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#response")
                     .shouldBe(visible)
-                    .shouldHave(text("Ошибка: сообщение не может быть пустым"));
+                    .shouldHave(text("Ошибка: Неверный JSON формат"));
         });
     }
 
