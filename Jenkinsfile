@@ -67,7 +67,7 @@ pipeline {
             steps {
                 dir('app3') {
                     sh '''
-                        mvn test -Dtest=MessageFlowTest -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
+                        mvn test -Dtest=*MessageFlowTest -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
                         ls -la allure-results/ # Проверка наличия файлов
                     '''
                 }
