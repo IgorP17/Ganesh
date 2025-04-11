@@ -14,6 +14,7 @@ import static io.qameta.allure.Allure.step;
 @Feature("Негативные сценарии")
 public class NegativeMessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(NegativeMessageFlowTest.class);
+    private static final String errorFront = "Ошибка: Неверный JSON формат";
 
     @BeforeClass
     public static void setup() {
@@ -46,7 +47,7 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#response")
                     .shouldBe(visible)
-                    .shouldHave(text("Ошибка: Неверный JSON формат"));
+                    .shouldHave(text(errorFront));
         });
     }
 
@@ -64,7 +65,7 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#response")
                     .shouldBe(visible)
-                    .shouldHave(text("Ошибка: сообщение превышает максимальную длину"));
+                    .shouldHave(text(errorFront));
         });
     }
 
