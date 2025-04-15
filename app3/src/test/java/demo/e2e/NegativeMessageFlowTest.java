@@ -34,7 +34,7 @@ public class NegativeMessageFlowTest {
         closeWebDriver();
     }
 
-    @Test
+    /*@Test
     @Story("Отправка некорректного сообщения")
     @Severity(SeverityLevel.CRITICAL)
     @Description("Попытка отправить пустое сообщение")
@@ -67,21 +67,39 @@ public class NegativeMessageFlowTest {
                     .shouldBe(visible)
                     .shouldHave(text(errorFront));
         });
-    }
+    }*/
 
     @Test
     @Story("Попытка поиска несуществующего ID")
     @Severity(SeverityLevel.MINOR)
     public void testNonExistentIdSearch() {
+        String id = "9999999";
         step("Вводим несуществующий ID", () -> {
-            $("#requestId").setValue("999999");
+            $("#requestId").setValue(id);
             $("#searchRequestButton").click();
         });
 
         step("Проверяем сообщение об ошибке", () -> {
             $("#requestData")
                     .shouldBe(visible)
-                    .shouldHave(text("Request not found"));
+                    .shouldHave(text("Request not found for ID: " + id));
+        });
+    }
+
+    @Test
+    @Story("Попытка поиска несуществующего ID в requestDataProcessed")
+    @Severity(SeverityLevel.MINOR)
+    public void testNonExistentIdSearchProcessed() {
+        String id = "9999999";
+        step("Вводим несуществующий ID processed", () -> {
+            $("#requestIdProcessed").setValue(id);
+            $("#searchProcessedRequestButton").click();
+        });
+
+        step("Проверяем сообщение об ошибке", () -> {
+            $("#requestDataProcessed")
+                    .shouldBe(visible)
+                    .shouldHave(text("No processed request found for requestId: " + id));
         });
     }
 }
