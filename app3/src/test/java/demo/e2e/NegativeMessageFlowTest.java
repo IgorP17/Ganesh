@@ -81,7 +81,7 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#requestData")
                     .shouldBe(visible)
-                    .shouldHave(text("Request not found"));
+                    .shouldHave(text("Запрос с ID 999999 не найден"));
         });
     }
 }
