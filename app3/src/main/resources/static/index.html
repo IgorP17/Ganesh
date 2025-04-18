@@ -128,21 +128,23 @@
         const responseElement = document.getElementById('response');
 
         try {
+            // пока на клиенте не будем валидировать
+            const message = messageInput;
             // Парсим и валидируем ввод перед отправкой
-            const message = JSON.parse(messageInput);
+            // const message = JSON.parse(messageInput);
 
             // Клиентская валидация (опционально)
-            if (!message || typeof message !== 'object') {
-                throw new Error("Неверный формат сообщения");
-            }
+            // if (!message || typeof message !== 'object') {
+            //     throw new Error("Неверный формат сообщения");
+            // }
 
-            if (!message.message || message.message.trim() === '') {
-                throw new Error("Сообщение не может быть пустым");
-            }
+            // if (!message.message || message.message.trim() === '') {
+            //     throw new Error("Сообщение не может быть пустым");
+            // }
 
-            if (message.message.length > 1000) {
-                throw new Error("Сообщение слишком длинное (макс. 1000 символов)");
-            }
+            // if (message.message.length > 1000) {
+            //     throw new Error("Сообщение слишком длинное (макс. 1000 символов)");
+            // }
 
             const response = await fetch('http://localhost:8080/api/send', {
                 method: 'POST',
