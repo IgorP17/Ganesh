@@ -25,12 +25,13 @@ public class RequestController {
     private RequestService requestService;
 
     @PostMapping("/send")
-    public String sendRequest(@RequestBody String data) {
-        logger.info("Got request: {}", data);
-        if (data.isEmpty()) {
-            logger.info("REJECT request because length is zero");
-            return "REJECT request because length is zero";
+    public String sendRequest(@RequestBody(required = false) String data) {
+        if (data == null || data.isEmpty()) {
+            logger.info("REJECT request because length is zero or empty");
+            return "REJECT request because length is zero or empty";
         }
+
+        logger.info("Got request: {}", data);
 
         if (data.length() > 1000) {
             logger.info("REJECT request because length over 1000");
