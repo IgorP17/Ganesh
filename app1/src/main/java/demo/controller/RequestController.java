@@ -2,7 +2,6 @@ package demo.controller;
 
 import demo.model.Request;
 import demo.repository.RequestRepository;
-import demo.service.KafkaConsumerService;
 import demo.service.KafkaProducerService;
 import demo.service.RequestService;
 import org.slf4j.Logger;
@@ -28,6 +27,16 @@ public class RequestController {
     @PostMapping("/send")
     public String sendRequest(@RequestBody String data) {
         logger.info("Got request: {}", data);
+        if (data.isEmpty()) {
+            logger.info("REJECT request because length is zero");
+            return "REJECT request because length is zero";
+        }
+
+        if (data.length() > 1000) {
+            logger.info("REJECT request because length over 1000");
+            return "REJECT request because length over 1000";
+        }
+
         Request request = new Request();
         request.setData(data);
         request = requestRepository.save(request);
