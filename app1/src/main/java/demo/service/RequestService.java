@@ -32,7 +32,7 @@ public class RequestService {
                     "Message: " + request.getData() + "\n" +
                     "Status: " + request.getStatus();
         } else {
-            return "Request not found";
+            return "Запрос с ID " + id + " не найден";
         }
     }
 }

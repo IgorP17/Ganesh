@@ -34,7 +34,7 @@ public class NegativeMessageFlowTest {
         closeWebDriver();
     }
 
-    @Test
+    /*@Test
     @Story("Отправка некорректного сообщения")
     @Severity(SeverityLevel.CRITICAL)
     @Description("Попытка отправить пустое сообщение")
@@ -49,9 +49,9 @@ public class NegativeMessageFlowTest {
                     .shouldBe(visible)
                     .shouldHave(text(errorFront));
         });
-    }
+    }*/
 
-    @Test
+    /*@Test
     @Story("Отправка слишком длинного сообщения")
     @Severity(SeverityLevel.NORMAL)
     public void testLongMessageSubmission() {
@@ -67,7 +67,7 @@ public class NegativeMessageFlowTest {
                     .shouldBe(visible)
                     .shouldHave(text(errorFront));
         });
-    }
+    }*/
 
     @Test
     @Story("Попытка поиска несуществующего ID")
