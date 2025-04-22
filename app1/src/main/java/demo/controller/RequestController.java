@@ -7,6 +7,8 @@ import demo.service.RequestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,25 +27,25 @@ public class RequestController {
     private RequestService requestService;
 
     @PostMapping("/send")
-    public String sendRequest(@RequestBody(required = false) String data) {
-        if (data == null || data.isEmpty()) {
-            logger.info("REJECT request because length is zero or empty");
-            return "REJECT request because length is zero or empty";
+    public ResponseEntity<String> sendRequest(@RequestBody(required = false) String data) {
+        if (null == data || data.isEmpty()) {
+            logger.warn("REJECT request because length is zero");
+            return ResponseEntity.badRequest().body("Invalid request: Empty message.");
+        }
+
+        if (data.length() > 1000) {
+            logger.warn("REJECT request because length over 1000");
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("Invalid request: Message too long.");
         }
 
         logger.info("Got request: {}", data);
-
-        if (data.length() > 1000) {
-            logger.info("REJECT request because length over 1000");
-            return "REJECT request because length over 1000";
-        }
 
         Request request = new Request();
         request.setData(data);
         request = requestRepository.save(request);
 
         kafkaProducerService.sendMessage("requests", request.getId(), data);
-        return "Request saved with ID: " + request.getId();
+        return ResponseEntity.ok("Request saved with ID: " + request.getId());
     }
 
     // Эндпоинт для поиска запроса по ID
