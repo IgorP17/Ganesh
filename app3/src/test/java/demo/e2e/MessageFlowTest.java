@@ -55,7 +55,7 @@ public class MessageFlowTest {
 
         LocalDateTime dt = LocalDateTime.now();
         String message = "Hello, autoQA! " + dt;
-        String testMessage = "{\n    \"message\":\"" + message + "\"\n}";
+        String testMessage = "{\"message\":\"" + message + "\"}";
 
         step("Отправка тестового сообщения: " + message, () -> {
             $("#messageInput").setValue(testMessage);
