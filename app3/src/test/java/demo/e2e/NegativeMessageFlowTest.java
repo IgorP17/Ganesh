@@ -14,7 +14,7 @@ import static io.qameta.allure.Allure.step;
 @Feature("Негативные сценарии")
 public class NegativeMessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(NegativeMessageFlowTest.class);
-    private static final String errorFront = "Ошибка: Неверный JSON формат";
+    private static final String nonExistsID = "999999";
 
     @BeforeClass
     public static void setup() {
@@ -74,14 +74,14 @@ public class NegativeMessageFlowTest {
     @Severity(SeverityLevel.MINOR)
     public void testNonExistentIdSearch() {
         step("Вводим несуществующий ID", () -> {
-            $("#requestId").setValue("999999");
+            $("#requestId").setValue(nonExistsID);
             $("#searchRequestButton").click();
         });
 
         step("Проверяем сообщение об ошибке", () -> {
             $("#requestData")
                     .shouldBe(visible)
-                    .shouldHave(text("Запрос с ID 999999 не найден"));
+                    .shouldHave(text("Запрос с ID " + nonExistsID + " не найден"));
         });
     }
 
@@ -90,14 +90,14 @@ public class NegativeMessageFlowTest {
     @Severity(SeverityLevel.MINOR)
     public void testNonExistentIdSearchApp2() {
         step("Вводим несуществующий ID", () -> {
-            $("#requestIdProcessed").setValue("999999");
+            $("#requestIdProcessed").setValue(nonExistsID);
             $("#searchProcessedRequestButton").click();
         });
 
         step("Проверяем сообщение об ошибке", () -> {
             $("#requestDataProcessed")
                     .shouldBe(visible)
-                    .shouldHave(text("Запрос с ID 999999 не найден"));
+                    .shouldHave(text("APP2: Запрос с ID " + nonExistsID + " не найден"));
         });
     }
 }
