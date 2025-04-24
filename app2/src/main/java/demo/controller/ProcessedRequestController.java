@@ -16,16 +16,14 @@ public class ProcessedRequestController {
 
     @Autowired
     private ProcessedRequestRepository processedRequestRepository;
-    @Autowired
-    private ProcessedRequestService processedRequestService;
 
     @GetMapping(value = "/by-request-id/{requestId}",
             produces = MediaType.TEXT_PLAIN_VALUE)
     public String getProcessedRequestByRequestId(@PathVariable Long requestId) {
-        /*ProcessedRequest pr = processedRequestRepository.findFirstByRequestId(requestId);
+        ProcessedRequest pr = processedRequestRepository.findFirstByRequestId(requestId);
 
         if (pr == null) {
-            return "No processed request found for requestId: " + requestId;
+            return "APP2: Запрос с ID" + requestId + "не найден";
         }
 
         return String.format(
@@ -35,7 +33,6 @@ public class ProcessedRequestController {
                 pr.getData(),
                 pr.getStatus(),
                 pr.getProcessedAt()
-        );*/
-        return processedRequestService.findByRequestId(requestId);
+        );
     }
 }
