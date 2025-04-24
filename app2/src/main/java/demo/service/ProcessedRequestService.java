@@ -25,7 +25,7 @@ public class ProcessedRequestService {
                     "Status: " + request.getStatus() + "\n" +
                     "Processed at: " + request.getProcessedAt();
         } else {
-            return "Request not found";
+            return "APP2: Запрос с ID " + requestId + " не найден";
         }
     }
 }

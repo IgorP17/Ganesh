@@ -70,7 +70,7 @@ public class NegativeMessageFlowTest {
     }*/
 
     @Test
-    @Story("Попытка поиска несуществующего ID")
+    @Story("Попытка поиска несуществующего ID в app1")
     @Severity(SeverityLevel.MINOR)
     public void testNonExistentIdSearch() {
         step("Вводим несуществующий ID", () -> {
@@ -80,6 +80,22 @@ public class NegativeMessageFlowTest {
 
         step("Проверяем сообщение об ошибке", () -> {
             $("#requestData")
+                    .shouldBe(visible)
+                    .shouldHave(text("Запрос с ID 999999 не найден"));
+        });
+    }
+
+    @Test
+    @Story("Попытка поиска несуществующего ID в app2")
+    @Severity(SeverityLevel.MINOR)
+    public void testNonExistentIdSearchApp2() {
+        step("Вводим несуществующий ID", () -> {
+            $("#requestIdProcessed").setValue("999999");
+            $("#searchProcessedRequestButton").click();
+        });
+
+        step("Проверяем сообщение об ошибке", () -> {
+            $("#requestDataProcessed")
                     .shouldBe(visible)
                     .shouldHave(text("Запрос с ID 999999 не найден"));
         });
