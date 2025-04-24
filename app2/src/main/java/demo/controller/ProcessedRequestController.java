@@ -23,7 +23,7 @@ public class ProcessedRequestController {
         ProcessedRequest pr = processedRequestRepository.findFirstByRequestId(requestId);
 
         if (pr == null) {
-            return "APP2: Запрос с ID" + requestId + "не найден";
+            return "APP2: Запрос с ID " + requestId + " не найден";
         }
 
         return String.format(
