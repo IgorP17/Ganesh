@@ -24,8 +24,8 @@ import static org.awaitility.Awaitility.await;
 
 @Epic("E2E Тестирование потока сообщений")
 @Feature("Основной поток обработки сообщений")
-public class MessageFlowTest {
-    private static final Logger logger = LoggerFactory.getLogger(MessageFlowTest.class);
+public class PositiveMessageFlowTest {
+    private static final Logger logger = LoggerFactory.getLogger(PositiveMessageFlowTest.class);
 
     @Before
     @Step("Настройка окружения")
