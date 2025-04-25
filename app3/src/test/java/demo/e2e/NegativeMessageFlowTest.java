@@ -34,7 +34,7 @@ public class NegativeMessageFlowTest {
         closeWebDriver();
     }
 
-    /*@Test
+    @Test
     @Story("Отправка некорректного сообщения")
     @Severity(SeverityLevel.CRITICAL)
     @Description("Попытка отправить пустое сообщение")
@@ -47,11 +47,11 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#response")
                     .shouldBe(visible)
-                    .shouldHave(text(errorFront));
+                    .shouldHave(text("Ошибка сервера: HTTP 400 - Invalid request: Empty message."));
         });
-    }*/
+    }
 
-    /*@Test
+    @Test
     @Story("Отправка слишком длинного сообщения")
     @Severity(SeverityLevel.NORMAL)
     public void testLongMessageSubmission() {
@@ -65,9 +65,9 @@ public class NegativeMessageFlowTest {
         step("Проверяем сообщение об ошибке", () -> {
             $("#response")
                     .shouldBe(visible)
-                    .shouldHave(text(errorFront));
+                    .shouldHave(text("Ошибка сервера: HTTP 413 - Invalid request: Message too long."));
         });
-    }*/
+    }
 
     @Test
     @Story("Попытка поиска несуществующего ID в app1")
