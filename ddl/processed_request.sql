@@ -12,3 +12,5 @@ CREATE TABLE public.processed_request (
 	processed_at timestamp(6) NULL,
 	CONSTRAINT processed_request_pkey PRIMARY KEY (id)
 );
+
+CREATE INDEX idx_processed_request_request_id ON public.processed_request(request_id);
