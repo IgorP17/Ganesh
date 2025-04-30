@@ -26,7 +26,7 @@ import static org.awaitility.Awaitility.await;
 @Feature("Основной поток обработки сообщений")
 public class PositiveMessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(PositiveMessageFlowTest.class);
-//
+
     @Before
     @Step("Настройка окружения")
     public void setUp() {
