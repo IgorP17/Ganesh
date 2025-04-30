@@ -1,0 +1,121 @@
+то предупреждение (SLF4J) означает, что в вашем проекте найдено несколько реализаций логгирования (Logback и Log4j 2), но SLF4J выбрал одну из них (Logback).
+Почему это происходит?
+
+SLF4J — это фасад (интерфейс) для логгирования, но ему нужна конкретная реализация (например, Logback, Log4j 2, java.util.logging).
+Если в classpath есть несколько таких реализаций, SLF4J выдаёт предупреждение и использует первую найденную (в вашем случае — Logback).
+Как исправить?
+
+Нужно оставить только одну реализацию, исключив лишние зависимости.
+🔹 1. Проверить зависимости
+
+Запусти:
+bash
+
+mvn dependency:tree | grep slf4j
+
+или для Gradle:
+bash
+
+gradle dependencies | grep slf4j
+
+Вы увидите что-то вроде:
+
+[INFO] +- ch.qos.logback:logback-classic:jar:1.2.11:runtime
+[INFO] +- org.apache.logging.log4j:log4j-slf4j-impl:jar:2.17.1:runtime
+
+Здесь видно, что есть Logback и Log4j 2.
+🔹 2. Оставить только одну реализацию
+Вариант A: Оставить Logback (рекомендуется для Spring Boot)
+
+Spring Boot по умолчанию использует Logback.
+Исключи Log4j 2 из зависимостей:
+xml
+
+<!-- Maven: pom.xml -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+
+Вариант B: Перейти на Log4j 2
+
+Если хотите использовать Log4j 2, исключите Logback:
+xml
+
+<!-- Maven: pom.xml -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-log4j2</artifactId>
+</dependency>
+
+🔹 3. Проверить конфликты в других библиотеках
+
+Некоторые библиотеки (например, Kafka, Hibernate) могут тянуть свои логи.
+Исключите их SLF4J-биндинги, если они не нужны:
+xml
+
+<dependency>
+    <groupId>org.apache.kafka</groupId>
+    <artifactId>kafka-clients</artifactId>
+    <exclusions>
+        <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+
+🔹 4. Убедиться, что нет дублирующихся jar-файлов
+
+Иногда проблема возникает из-за ручного добавления библиотек в lib/.
+Проверьте:
+
+    target/ (для Maven)
+
+    build/libs/ (для Gradle)
+
+    Вручную добавленные jar-файлы.
+
+Что делать, если исправление не помогло?
+
+    Очистите кэш сборки:
+    bash
+
+mvn clean
+gradle clean
+
+Проверьте src/main/resources:
+Удалите лишние файлы конфигурации (например, log4j2.xml, если используете Logback).
+
+Запустите с -Dslf4j.detectLoggerNameMismatch=true:
+bash
+
+    mvn spring-boot:run -Dslf4j.detectLoggerNameMismatch=true
+
+    Это покажет больше деталей.
+
+Итог
+
+Предупреждение не критично, но лучше оставить только одну реализацию логгирования.
+
+    Spring Boot по умолчанию использует Logback — проще исключить Log4j 2.
+
+    Если нужен Log4j 2, подключите spring-boot-starter-log4j2 и исключите Logback.
+
+После исправлений предупрежде
