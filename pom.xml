@@ -35,6 +35,9 @@
         <!-- allure -->
         <aspectj.version>1.9.19</aspectj.version>
         <allure.version>2.24.0</allure.version>
+        <!-- rest assured -->
+        <restassured.version>5.3.2</restassured.version>
+        <assertj.version>3.24.2</assertj.version>
     </properties>
 
 
@@ -134,6 +137,19 @@
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-junit4</artifactId>
             <version>${allure.version}</version>
+        </dependency>
+        <!-- restassured -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version> <!-- Используйте актуальную версию -->
+            <scope>test</scope> <!-- Нужна только для тестов -->
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version> <!-- Актуальная версия на момент 2025 -->
+            <scope>test</scope>  <!-- Только для тестов! -->
         </dependency>
     </dependencies>
 
