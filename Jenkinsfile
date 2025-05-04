@@ -71,6 +71,8 @@ pipeline {
                         ls -la allure-results/ # Проверка наличия файлов
                     '''
                 }
+            }
+            steps {
                 dir('app3') {
                     sh '''
                         mvn test -Dtest=*MessageFlowTest -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
