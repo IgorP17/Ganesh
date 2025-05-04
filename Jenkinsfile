@@ -65,6 +65,14 @@ pipeline {
 
         stage('Run Tests') {
             steps {
+                dir('app1') {
+                    sh '''
+                        mvn test -Dtest=*Test -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
+                        ls -la allure-results/ # Проверка наличия файлов
+                    '''
+                }
+            }
+            steps {
                 dir('app3') {
                     sh '''
                         mvn test -Dtest=*MessageFlowTest -Dallure.results.directory=./allure-results || echo "Тесты завершены с кодом $?"
@@ -104,7 +112,7 @@ pipeline {
                     jdk: '',
                     properties: [],
                     reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'app3/allure-results']],  // Измененный путь
+                    results: [[path: 'app3/allure-results', path: 'app1/allure-results']],  // Измененный путь
                     report: 'allure-report'
                 ])
             }
