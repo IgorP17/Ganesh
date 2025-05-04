@@ -60,10 +60,25 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>-->
+
+        <!-- remove dependency of junit 4
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        -->
+
+        <!-- include spring-boot-starter-test
+        Эта зависимость включает:
+            JUnit 5 (Jupiter)
+            Mockito
+            AssertJ
+            Spring Test-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -135,7 +150,7 @@
         <!-- Allure -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-junit4</artifactId>
+            <artifactId>allure-junit5</artifactId>
             <version>${allure.version}</version>
         </dependency>
         <!-- restassured -->

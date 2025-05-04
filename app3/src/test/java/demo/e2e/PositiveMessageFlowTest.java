@@ -2,10 +2,9 @@ package demo.e2e;
 
 import com.codeborne.selenide.Configuration;
 import io.qameta.allure.*;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,14 +19,16 @@ import static com.codeborne.selenide.Selenide.*;
 import static io.qameta.allure.Allure.step;
 import static java.time.Duration.ofSeconds;
 import static java.util.concurrent.TimeUnit.*;
+import static org.assertj.core.api.Assertions.fail;
 import static org.awaitility.Awaitility.await;
+import static org.assertj.core.api.Assertions.assertThat; // AssertJ
 
 @Epic("E2E Тестирование потока сообщений")
 @Feature("Основной поток обработки сообщений")
 public class PositiveMessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(PositiveMessageFlowTest.class);
 
-    @Before
+    @BeforeEach
     @Step("Настройка окружения")
     public void setUp() {
         logger.info("TEST {}", "EE");
@@ -38,7 +39,7 @@ public class PositiveMessageFlowTest {
         open("http://localhost:8082");
     }
 
-    @After
+    @AfterEach
     @Step("Очистка после теста")
     public void tearDown() {
         closeWebDriver();
@@ -75,7 +76,8 @@ public class PositiveMessageFlowTest {
             if (matcher.find()) {
                 return matcher.group(1);
             }
-            Assert.fail("ID not found in text: " + response);
+            // assertThat(user.getName()).isEqualTo("Igor"); // AssertJ
+            fail("ID not found in text: " + response);
             return "";
         });
 
@@ -110,8 +112,9 @@ public class PositiveMessageFlowTest {
     @Description("Всегда успешный тест для проверки инфраструктуры")
     @Severity(SeverityLevel.MINOR)
     public void testFake() {
+        Long me = 1L;
         step("Проверка тривиального утверждения", () -> {
-            Assert.assertEquals(1L, 1L);
+            assertThat(1L).isEqualTo(me);
         });
     }
 
@@ -124,9 +127,7 @@ public class PositiveMessageFlowTest {
         int chance = random.nextInt(100);
 
         step("Генерация случайного числа: " + chance, () -> {
-            if (chance < 0) {
-                Assert.fail("Имитация случайного падения теста (вероятность 0%)");
-            }
+            assertThat(chance).isGreaterThan(5);
         });
     }
 }

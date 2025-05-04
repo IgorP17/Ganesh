@@ -2,7 +2,9 @@ package demo.e2e;
 
 import com.codeborne.selenide.Configuration;
 import io.qameta.allure.*;
-import org.junit.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,20 +18,17 @@ public class NegativeMessageFlowTest {
     private static final Logger logger = LoggerFactory.getLogger(NegativeMessageFlowTest.class);
     private static final String nonExistsID = "999999";
 
-    @BeforeClass
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
+        logger.info("TEST NEG {}", "NEG EE");
         Configuration.browser = "firefox";
         Configuration.baseUrl = "http://localhost:8082";
         Configuration.timeout = 10000;
         Configuration.headless = true;
+        open("http://localhost:8082");
     }
 
-    @Before
-    public void openBrowser() {
-        open("/");
-    }
-
-    @After
+    @AfterEach
     public void tearDown() {
         closeWebDriver();
     }

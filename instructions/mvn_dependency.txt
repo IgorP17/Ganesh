@@ -1,0 +1,11 @@
+igor@igor-VirtualBox:~/Projects/Ganesh/app1$ mvn dependency:tree | grep "junit"
+[INFO] |  +- org.junit.jupiter:junit-jupiter:jar:5.11.4:test
+[INFO] |  |  +- org.junit.jupiter:junit-jupiter-params:jar:5.11.4:test
+[INFO] |  |  \- org.junit.jupiter:junit-jupiter-engine:jar:5.11.4:test
+[INFO] |  +- org.mockito:mockito-junit-jupiter:jar:5.14.2:test
+[INFO] +- io.qameta.allure:allure-junit5:jar:2.24.0:compile
+[INFO] |  +- io.qameta.allure:allure-junit-platform:jar:2.24.0:compile
+[INFO] |  +- org.junit.jupiter:junit-jupiter-api:jar:5.11.4:runtime
+[INFO] |  |  +- org.junit.platform:junit-platform-commons:jar:1.11.4:runtime
+[INFO] |  \- org.junit.platform:junit-platform-launcher:jar:1.11.4:runtime
+[INFO] |     \- org.junit.platform:junit-platform-engine:jar:1.11.4:runtime
