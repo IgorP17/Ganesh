@@ -3,9 +3,8 @@ package demo;
 import io.qameta.allure.*;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -18,7 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static io.qameta.allure.Allure.step;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat; // AssertJ
+import static org.assertj.core.api.Assertions.fail;
 
 public class IntegrationTest {
 
@@ -26,7 +26,7 @@ public class IntegrationTest {
     private static final String BASE_URL = "http://localhost:8080"; // Адрес, на котором запущено приложение
     private static JdbcTemplate jdbcTemplate;
 
-    @Before
+    @BeforeEach
     @Step("Настройка окружения")
     public void setup() {
         // Настройка соединения с базой данных
@@ -69,7 +69,7 @@ public class IntegrationTest {
             if (matcher.find()) {
                 return matcher.group(1);
             }
-            Assert.fail("ID not found in text: " + response);
+            fail("ID not found in text: " + response);
             return "";
         });
         Long id = Long.parseLong(stringID);
