@@ -4,6 +4,7 @@ import demo.model.Request;
 import demo.repository.RequestRepository;
 import demo.service.KafkaProducerService;
 import demo.service.RequestService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class RequestController {
     private RequestService requestService;
 
     @PostMapping("/send")
+    @Operation(summary = "APP1: Отправить запрос")
     public ResponseEntity<String> sendRequest(@RequestBody(required = false) String data) {
         if (null == data || data.isEmpty()) {
             logger.warn("REJECT request because length is zero");
