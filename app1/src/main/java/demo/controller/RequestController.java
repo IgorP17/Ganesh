@@ -5,6 +5,11 @@ import demo.repository.RequestRepository;
 import demo.service.KafkaProducerService;
 import demo.service.RequestService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +34,24 @@ public class RequestController {
 
     @PostMapping("/send")
     @Operation(summary = "APP1: Отправить запрос")
-    public ResponseEntity<String> sendRequest(@RequestBody(required = false) String data) {
+    @ApiResponse(responseCode = "200",
+            description = "Request saved with ID: ...",
+            content = @Content(
+                    examples = @ExampleObject(
+                            value = "Request saved with ID: ..."
+                    ),
+                    schema = @Schema(type = "string")))
+    public ResponseEntity<String> sendRequest(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "Данные запроса",
+                    content = @Content(
+//                            mediaType = "text/plain",
+                            examples = @ExampleObject(
+                                    value = "{\"message\":\"Hello from swagger!\"}"
+                            ),
+                            schema = @Schema(type = "string")
+                    ))
+            @RequestBody(required = false) String data) {
         if (null == data || data.isEmpty()) {
             logger.warn("REJECT request because length is zero");
             return ResponseEntity.badRequest().body("Invalid request: Empty message.");
@@ -51,8 +73,20 @@ public class RequestController {
     }
 
     // Эндпоинт для поиска запроса по ID
+    @Operation(summary = "Получить запрос по ID")
+    @ApiResponse(responseCode = "200",
+            description = "Request ID:",
+            content = @Content(
+            examples = @ExampleObject(
+                    value = "Request ID: 188\n" +
+                            "Message: {\"message\":\"Hello, autoQA! 2025-05-04T21:10:40.157626195\"}\n" +
+                            "Status: SUCCESS"
+            ),
+            schema = @Schema(type = "string")))
     @GetMapping("/request/{id}")
-    public String getRequestData(@PathVariable Long id) {
+    public String getRequestData(
+            @Parameter(description = "ID запроса", example = "188")
+            @PathVariable Long id) {
         return requestService.getRequestData(id);
     }
 }
