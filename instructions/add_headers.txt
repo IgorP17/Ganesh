@@ -1,0 +1,147 @@
+Я проанализировал ваш проект и предлагаю реализацию для сохранения headers в БД и передачи их в Kafka. Вот пошаговое решение:
+1. Модификация DDL для app1 и app2
+
+Для app1 (добавить в ddl/app1.sql):
+sql
+
+ALTER TABLE requests ADD COLUMN headers JSONB;
+
+Для app2 (добавить в ddl/app2.sql):
+sql
+
+ALTER TABLE processed_requests ADD COLUMN headers JSONB;
+
+2. Обновление сущностей
+
+Для app1 (Request.java):
+java
+
+@Entity
+@Table(name = "requests")
+public class Request {
+    // ... существующие поля
+
+    @Column(columnDefinition = "jsonb")
+    private String headers; // или Map<String, String> при использовании hibernate-types
+
+    // Геттеры и сеттеры
+}
+
+3. Модификация контроллеров
+
+В RequestController (app1):
+java
+
+@PostMapping("/send")
+public ResponseEntity<String> sendRequest(
+        @RequestHeader HttpHeaders headers,
+        @RequestBody(required = false) String data) {
+
+    // Сохранение headers в БД
+    Request request = new Request();
+    request.setData(data);
+    request.setHeaders(convertHeadersToJson(headers)); // Реализуйте этот метод
+
+    requestRepository.save(request);
+
+    // Передача в Kafka с headers
+    kafkaProducerService.sendMessageWithHeaders(
+        "requests",
+        request.getId(),
+        data,
+        headers
+    );
+
+    return ResponseEntity.ok("Request saved");
+}
+
+private String convertHeadersToJson(HttpHeaders headers) {
+    Map<String, String> headerMap = headers.entrySet().stream()
+        .collect(Collectors.toMap(
+            Map.Entry::getKey,
+            e -> String.join(",", e.getValue())
+        );
+    return new ObjectMapper().writeValueAsString(headerMap);
+}
+
+4. Обновление Kafka Producer (KafkaProducerService.java)
+java
+
+public void sendMessageWithHeaders(
+        String topic,
+        Long key,
+        String message,
+        HttpHeaders headers) {
+
+    ProducerRecord<String, String> record =
+        new ProducerRecord<>(topic, key.toString(), message);
+
+    // Добавляем headers в Kafka message
+    headers.forEach((name, values) ->
+        record.headers().add(name, values.get(0).getBytes()));
+
+    kafkaTemplate.send(record);
+}
+
+5. Обработка в app2
+
+В app2 при получении сообщения:
+java
+
+@KafkaListener(topics = "requests")
+public void listen(ConsumerRecord<String, String> record) {
+    // Извлечение headers из Kafka message
+    Map<String, String> headers = new HashMap<>();
+    for (Header header : record.headers()) {
+        headers.put(header.key(), new String(header.value()));
+    }
+
+    // Сохранение в БД
+    ProcessedRequest processedRequest = new ProcessedRequest();
+    processedRequest.setOriginalData(record.value());
+    processedRequest.setHeaders(new ObjectMapper().writeValueAsString(headers));
+
+    processedRequestRepository.save(processedRequest);
+}
+
+6. Дополнительные настройки
+
+Для работы с JSON в PostgreSQL добавьте зависимость в pom.xml:
+xml
+
+<dependency>
+    <groupId>com.vladmihalcea</groupId>
+    <artifactId>hibernate-types-52</artifactId>
+    <version>2.21.1</version>
+</dependency>
+
+И аннотируйте поле headers:
+java
+
+@Type(type = "jsonb")
+@Column(columnDefinition = "jsonb")
+private String headers;
+
+Проверка работы:
+
+    Отправьте запрос с headers:
+
+bash
+
+curl -X POST -H "Content-Type: application/json" -H "X-Custom-Header: value" -d "test" http://localhost:8080/api/send
+
+    Проверьте БД - в таблицах должны появиться headers в формате JSON.
+
+    Убедитесь, что app2 получил и сохранил headers.
+
+Это решение обеспечит:
+
+    Сохранение всех входящих headers в БД
+
+    Передачу headers через Kafka
+
+    Совместимость с существующим кодом
+
+    Поддержку любых headers (включая кастомные)
+
+New chat
