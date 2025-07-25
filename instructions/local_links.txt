@@ -1,0 +1,12 @@
+Управление запросами
+http://localhost:8082/
+
+
+Jenkins
+http://localhost:8083/login?from=%2Fjob%2FJenkins1%2F
+
+Swagger
+http://localhost:8080/swagger-ui/index.html#/request-controller/sendRequest
+http://localhost:8080/api-docs
+
+mvn spring-boot:run
