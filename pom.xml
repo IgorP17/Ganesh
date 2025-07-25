@@ -13,6 +13,7 @@
         <module>app1</module>
         <module>app2</module>
         <module>app3</module>
+        <module>annotation-reflection-aka-junit</module>
     </modules>
 
     <!-- Родительский POM для Spring Boot -->
