@@ -10,10 +10,10 @@ public class TestClass {
     public TestClass() {
     }
 
-    /*public TestClass(int int1, String s1) {
+    public TestClass(int int1, String s1) {
         this.int1 = int1;
         this.s1 = s1;
-    }*/
+    }
 
     @MyTestAnnotation
     void test1() {

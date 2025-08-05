@@ -21,7 +21,7 @@ public class Runner {
         // теперь возьмем только с нужной аннотацией
         ArrayList<Method> methodsForRun = new ArrayList<>(); // почему интересно List<Method> не проканало
         for (Method declaredMethod : declaredMethods) {
-            if (declaredMethod.isAnnotationPresent(MyTestAnnotation.class)){
+            if (declaredMethod.isAnnotationPresent(MyTestAnnotation.class)) {
                 methodsForRun.add(declaredMethod);
             }
         }
@@ -34,6 +34,38 @@ public class Runner {
 
         //final Constructor<TestClass> constructor = testClassClass.getDeclaredConstructor(int.class, String.class);
 
+        //
+        final Constructor<TestClass> constructor = testClassClass.getDeclaredConstructor(int.class, String.class);
+        try {
+            TestClass instance = constructor.newInstance(10, "test");
+
+            // Выполняем отобранные методы на нашем экземпляре
+            for (Method method : methodsForRun) {
+                boolean success = true;
+                try {
+                    // Удаляем ограничение приватности (если нужно)
+                    method.setAccessible(true);
+                    method.invoke(instance); // Попытка вызова метода
+                } catch (InvocationTargetException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause instanceof AssertionError) {
+                        logger.error("Test {} failed with: {}", method.getName(), cause.getMessage());
+                        success = false;
+                    } else {
+                        throw ex; // Другие типы исключений выбрасываются наружу
+                    }
+                } catch (Throwable t) {
+                    logger.error("Error invoke method {}: {}", method.getName(), t.getMessage());
+                    success = false;
+                }
+
+                if (success) {
+                    logger.info("Test {} passed", method.getName());
+                }
+            }
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 
