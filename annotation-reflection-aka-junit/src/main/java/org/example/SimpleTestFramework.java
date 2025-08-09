@@ -45,7 +45,6 @@ public class SimpleTestFramework {
     }
 
     static class TestFramework {
-        static DisplayName displayName;
 
         public void runTests(Class<?> testClass)
                 throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -65,6 +64,8 @@ public class SimpleTestFramework {
 
             for (Method testMethod : testMethods) {
                 try {
+                    // Удаляем ограничение приватности (если нужно)
+//                    testMethod.setAccessible(true);
                     testMethod.invoke(testObject);
                     results.add(String.format("Test: %s is success, %s",
                             testMethod.getName(),
@@ -83,7 +84,7 @@ public class SimpleTestFramework {
         }
 
         private static String getAnnotationParams(Method method) {
-            displayName = method.getAnnotation(DisplayName.class);
+            DisplayName displayName = method.getAnnotation(DisplayName.class);
             try {
                 // Получаем приоритет из аннотации
                 int priorityFromAnnotation = displayName.priority();
