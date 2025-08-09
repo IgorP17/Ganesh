@@ -85,6 +85,9 @@ public class SimpleTestFramework {
 
         private static String getAnnotationParams(Method method) {
             DisplayName displayName = method.getAnnotation(DisplayName.class);
+            if (displayName == null) {
+                return "!ACHTUNG - display name is null";
+            }
             try {
                 // Получаем приоритет из аннотации
                 int priorityFromAnnotation = displayName.priority();
@@ -112,6 +115,11 @@ public class SimpleTestFramework {
         @DisplayName(message = "This is DisplayName 2")
         public void testSomethingElse() {
             throw new RuntimeException("Execute test2 - it will fail (RuntimeException)");
+        }
+
+        @Test
+        public void testSomethingElse2() {
+            throw new RuntimeException("Execute test3!!! - it will fail (RuntimeException)");
         }
     }
 
